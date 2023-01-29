@@ -1,0 +1,15 @@
+html, body, #__nuxt {
+    height: 100%;
+
+    margin: 0;
+    padding: 0;
+}
+
+#__nuxt {
+    display: flex;
+    /* justify-content: center; */
+}
+
+.entry.entry>div:nth-child(2) {
+    flex: 1;
+}

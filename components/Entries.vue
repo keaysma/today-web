@@ -6,29 +6,118 @@ const { public: { backendAddress } } = useRuntimeConfig()
 const { pending, data } = useLazyAsyncData('entries', () => $fetch(`${backendAddress}/api/entries?tags=${selectedTags.value.join(',')}`))
 const refresh = () => refreshNuxtData('entries')
 
+const createItemFormIsOpen = useCreateItemFormIsOpen()
 const selectedTags = useSelectedTags()
 watch(selectedTags, () => refresh())
 
-let entriesMap = {}
+let mappings = ref({
+    items: {},
+    itemsGroups: {},
+    entries: {},
+    entriesValues: {}
+})
 watch(data, (newData) => {
-    entriesMap = newData.entries.reduce(
-        (acc, entry) => {
-            let selectedEntry = entry
-            const existingEntry = acc[entry.key]
+    const itemsMapping = newData.items.reduce(
+        (acc, item) => ({
+            ... acc,
+            [item.key]: item
+        }),
+        {}
+    )
 
-            if(existingEntry){
-                const dotEntry = selectedTags.value.filter(x => entry.tags.includes(x))
-                const dotExistingEntry = selectedTags.value.filter(x => existingEntry.tags.includes(x))
-                if(dotExistingEntry > dotEntry)
-                    selectedEntry = existingEntry
-            }
+    const itemsGroupsMapping = newData.items.reduce(
+        (acc, item) => {
+            const group = item.tags.join(', ')
             return {
                 ... acc,
-                [entry.key]: selectedEntry
+                [group]: {
+                    ... (acc[group] || {}),
+                    [item.key]: item
+                }
             }
         },
         {}
     )
+
+    const valuesMappingBase = Object.entries(itemsMapping).reduce(
+        (acc, [key, { itype }]) => ({
+            ... acc,
+            [key]: itype === 'checkbox' ? false : ''
+        }),
+        {}
+    )
+
+    const entriesMapping = newData.entries.reduce(
+        (acc, entry) => {
+            let selectedEntry = entry
+            const existingEntry = acc[entry.key]
+
+            /*if(existingEntry)
+                return {
+                    ... acc,
+                    [entry.key + ' (dup) ']: selectedEntry
+                }
+
+            return {
+                ... acc,
+                [entry.key]: selectedEntry
+            }*/
+
+            if(existingEntry){
+                const dotEntry = selectedTags.value.filter(x => entry.tags.includes(x))
+                const dotExistingEntry = selectedTags.value.filter(x => existingEntry.tags.includes(x))
+                if(dotExistingEntry.length > dotEntry.length){
+                    return {
+                        ... acc,
+                        [`${entry.key} (dup)`]: entry
+                    }
+                }else{
+                    return {
+                        ... acc,
+                        [`${entry.key} (dup)`]: existingEntry,
+                        [entry.key]: entry
+                    }
+                }
+            }
+            return {
+                ... acc,
+                [entry.key]: entry
+            }
+        },
+        {}
+    )
+    
+    const valuesMapping = Object.entries(entriesMapping).reduce(
+        (acc, [k, { value, key }]) => {
+            const item = itemsMapping[key]
+            if(!item) return acc
+
+            const parsedValue = item.itype === 'checkbox' ? value === 'true' : value
+
+            return { 
+                ... acc, 
+                [k]: parsedValue
+            }
+        }, 
+        {}
+    )
+
+    console.log({
+        itemsMapping, itemsGroupsMapping, entriesMapping, valuesMapping, valuesMappingBase, entriesValues: {
+            ... valuesMappingBase,
+            ... valuesMapping
+        }
+    })
+    
+    mappings.value = {
+        items: itemsMapping,
+        itemsGroups: itemsGroupsMapping,
+        entries: entriesMapping,
+        entriesValues: {
+            ... valuesMappingBase,
+            ... valuesMapping
+        }
+    }
 })
 
 const update = async (key, value) => {
@@ -39,19 +128,6 @@ const update = async (key, value) => {
             tags: selectedTags.value
         }
     })
-}
-
-const addItem = async () => {
-    const input = document.querySelector('#new-item')
-    await $fetch(`${backendAddress}/api/items`, {
-        method: 'POST',
-        body: {
-            key: input.value,
-            itype: 'checkbox',
-            tags: selectedTags.value
-        }
-    })
-    input.value = ''
     refresh()
 }
 
@@ -65,32 +141,153 @@ const deleteItem = async (key) => {
     refresh()
 }
 
+const eqSet = (xs, ys) =>
+    xs.size === ys.size &&
+    [...xs].every((x) => ys.has(x));
+const updateEntry = async (key, newValue) => {
+    const item = mappings.value.items[key]
+    const entry = mappings.value.entries[key]
+    console.log(data.value.entries)
+    const exactEntry = data.value.entries.find(
+        (e) => {
+            return e.key === key && 
+                eqSet(
+                    new Set(e.tags.map(tag => tag.toLowerCase())), 
+                    new Set(selectedTags.value.map(tag => tag.toLowerCase()))
+                )
+        }
+    )
+
+    console.debug({ item, entry, newValue, exactEntry })
+
+    if(item.itype !== 'checkbox'){
+        console.debug('other')
+        return update(key, newValue)
+    }
+
+    console.debug('checkbox')
+    if(newValue === 'false' && exactEntry !== undefined){
+        console.debug('delete', { key, tags: selectedTags.value })
+        return deleteEntry(key, selectedTags.value)
+    }
+
+    console.debug('update')
+    return update(key, newValue)
+}
+
+const deleteEntry = async (key, tags) => {
+    console.log(key, tags)
+    await $fetch(`${backendAddress}/api/entries`, {
+        method: 'DELETE',
+        body: {
+            key, tags
+        }
+    })
+    refresh()
+}
+
 refresh()
 </script>
 
 <template>
-    <div v-if="pending || !data">loading...</div>
-    <div v-else style="display: flex; flex-direction: column;">
-        <div v-for="item in data.items" :key="item.key" style="display: flex;">
-            <div v-if="item.itype === 'checkbox'">
-                <input 
-                    :name="item.key"
-                    :type="item.itype" 
-                    :checked="entriesMap[item.key]?.value === 'true'" 
-                    @click="update(item.key, (entriesMap[item.key]?.value !== 'true').toString())"
+    <el-space v-loading="pending || !data" direction="vertical" alignment="flex-start" style="width: 100%;" :fill="true">
+        <el-space v-if="data" direction="vertical" alignment="flex-start" style="width: 100%;" :fill="true">
+            <!-- ungrouped
+            <el-space 
+                v-for="item in Object.values(mappings.items)" 
+                :key="item.key"
+                class="entry"
+                style="width: 100%; justify-content: space-between;"
+            >
+                <el-checkbox v-if="item.itype === 'checkbox'"
+                    plain 
+                    :label="item.key"
+                    v-model="mappings.entriesValues[item.key]"
+                    @change="update(item.key, (mappings.entriesValues[item.key]).toString())"
                 />
-                <label :for="item.key">{{ item.key }}</label>
-                <button @click="deleteItem(item.key)">x</button>
-            </div>
-            <div v-else>
-                <p>{{ entriesMap[item.key]?.value }}</p>
-            </div>
-        </div>
-    </div>
-    <div>
-        <label for="new-item">New Item:</label>
-        <input name="new-item" id="new-item"/>
-        <button @click="addItem">+</button>
-    </div>
+                <p v-else>{{ entriesMap[item.key]?.value }}</p>
+
+                <div style="height: 1px; width: 50px; background: #ccc;"/>
+
+                <el-dropdown trigger="click">
+                    <el-button round text bg small class="el-dropdown-link">
+                        &middot;&middot;&middot;
+                    </el-button>
+                    <template #dropdown>
+                        <el-dropdown-item @click="deleteItem(item.key)">delete</el-dropdown-item>
+                    </template>
+                </el-dropdown>
+            </el-space> -->
+            <el-space 
+                v-for="item in Object.entries(mappings.itemsGroups)" 
+                :key="item[0]"
+                direction="vertical"
+                alignment="flex-start" style="width: 100%;" :fill="true"
+            >
+                <el-space spacer="|">
+                    <h3 v-for="title in item[0].split(',')" :key="title">{{ title.replaceAll('"', '').trim() }}</h3>
+                </el-space>
+                <el-space 
+                    v-for="item in Object.values(item[1])" 
+                    :key="item.key"
+                    class="entry"
+                    style="position: relative; width: 100%; justify-content: space-between;"
+                >
+                    <el-checkbox v-if="item.itype === 'checkbox'"
+                        plain 
+                        :label="item.key"
+                        v-model="mappings.entriesValues[item.key]"
+                        @change="updateEntry(item.key, (mappings.entriesValues[item.key]).toString())"
+                    />
+                    <p v-else>{{ entriesMap[item.key]?.value }}</p>
+
+                    <div style="position: relative; height: 1px; width: 50px; background: #ccc;">
+                        <p
+                            v-if="item.itype === 'checkbox' && mappings.entries[item.key] !== undefined"
+                            style="position: absolute; top: -50px; right: 10px; font-size: 2rem; color: #aaa;"
+                        >
+                            &middot;
+                        </p>
+                    </div>
+
+                    <el-dropdown trigger="click">
+                        <el-button round text bg small class="el-dropdown-link">
+                            &middot;&middot;&middot;
+                        </el-button>
+                        <template #dropdown>
+                            <el-dropdown-item 
+                                v-if="item.itype === 'checkbox' && mappings.entries[item.key] !== undefined"
+                                @click="deleteEntry(item.key, mappings.entries[item.key].tags)"
+                            >
+                                clear
+                            </el-dropdown-item>
+                            <el-dropdown-item @click="deleteItem(item.key)">delete</el-dropdown-item>
+                        </template>
+                    </el-dropdown>
+                </el-space>
+            </el-space>
+        </el-space>
+        <el-button 
+            v-if="!createItemFormIsOpen" 
+            plain
+            size="small"
+            type="primary" 
+            style="width: 50px;"
+            :disabled="!data?.items || !selectedTags.length" 
+            @click="createItemFormIsOpen = true" 
+        >
+            + New Item
+        </el-button>
+    </el-space>
     <!-- <button @click="refresh">get</button> -->
 </template>
+
+<style scoped>
+h3 {
+    font-size: 0.75rem;
+    color: #aaa;
+
+    margin: 0;
+    padding: 0;
+}
+</style>

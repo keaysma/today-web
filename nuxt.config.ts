@@ -6,7 +6,11 @@ export default defineNuxtConfig({
 
         public: {
             dummyConfigPublic: 'public-config',
-            backendAddress: 'http://localhost:8080'
+            backendAddress: 'http://127.0.0.1:8080'
         }
-    }
+    },
+    
+    css: [
+        '@/assets/css/global.css'
+    ]
 })
