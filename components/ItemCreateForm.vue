@@ -1,5 +1,6 @@
 <!-- A form for specifying settings for items. -->
 <script setup>
+import { getTagColor, displayTag } from '@/utils/tags'
 const { public: { backendAddress } } = useRuntimeConfig()
 const visible = useCreateItemFormIsOpen()
 const initialTags = useSelectedTags()
@@ -43,10 +44,11 @@ const submit = async () => {
                         :key="tag"
                         class="mx-1"
                         closable
+                        :type="getTagColor(tag)"
                         :disable-transitions="true"
                         @close="handleRemoveTag(tag)"
                     >
-                        {{ tag }}
+                        {{ displayTag(tag) }}
                     </el-tag>
                 </el-space>
 

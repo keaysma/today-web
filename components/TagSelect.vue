@@ -1,5 +1,7 @@
 <!-- A multi-select component for selecting tags. Auto-fetches suggestions when text is entered. -->
 <script setup>
+import { tagIsDate, getTagColor, displayTag } from '@/utils/tags'
+
 const { public: { backendAddress } } = useRuntimeConfig()
 const { pending, data } = await useFetch(`${backendAddress}/api/all-tags`)
 const getData = () => data
@@ -15,7 +17,7 @@ const showInput = () => {
 }
 const handleAddTag = () => {
     if(inputValue.value)
-        selectedTags.value = [... selectedTags.value, inputValue.value]
+        selectedTags.value = [... selectedTags.value, inputValue.value].map(tag => tag.toLowerCase())
     inputVisible.value = false
     inputValue.value = ''
     localStorage.setItem('lastSelectedTags', JSON.stringify(selectedTags.value))
@@ -28,7 +30,7 @@ const addTodayTags = () => {
     const year = today.getFullYear().toString()
     const month = today.toLocaleString('default', { month: 'long' })
 
-    selectedTags.value = [... selectedTags.value, month, day, year]
+    selectedTags.value = [... selectedTags.value, `month:${month}`, `day:${day}`, `year:${year}`].map(tag => tag.toLowerCase())
     localStorage.setItem('lastSelectedTags', JSON.stringify(selectedTags.value))
 }
 const handleRemoveTag = (removeTag) => {
@@ -61,19 +63,6 @@ const querySearch = (queryString, cb) => {
     cb(results.map(value => ({ value })))
 }
 
-const months = [
-    "january", "february", "march", "april", "may", "june",
-    "july", "august", "september", "october", "november", "december"
-]
-const tagIsDate = (tag) => !isNaN(parseInt(tag)) || months.includes(tag.toLowerCase())
-
-const getTagColor = (tag) => {
-    if(tagIsDate(tag))
-        return 'warning'
-
-    return ''
-}
-
 
 if(process.client)
     selectedTags.value = getTagsFromLocalStorage()
@@ -98,7 +87,7 @@ if(process.client)
                 :disable-transitions="true"
                 @close="handleRemoveTag(tag)"
             >
-                {{ tag }}
+                {{ displayTag(tag) }}
             </el-tag>
             <el-autocomplete
                 v-if="inputVisible"

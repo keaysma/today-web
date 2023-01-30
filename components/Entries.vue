@@ -1,6 +1,7 @@
 <!-- All items with entries applied to them. Automatically fetches items and entries when selected tags are changes, or when items or entires are mutated. -->
 
 <script setup>
+import { titleFromTags } from '@/utils/tags'
 const { public: { backendAddress } } = useRuntimeConfig()
 
 const { pending, data } = useLazyAsyncData('entries', () => $fetch(`${backendAddress}/api/entries?tags=${selectedTags.value.join(',')}`))
@@ -225,7 +226,7 @@ refresh()
                 alignment="flex-start" style="width: 100%;" :fill="true"
             >
                 <el-space spacer="|">
-                    <h3 v-for="title in item[0].split(',')" :key="title">{{ title.replaceAll('"', '').trim() }}</h3>
+                    <h3 v-for="title in titleFromTags(item[0])" :key="title">{{ title.replaceAll('"', '').trim() }}</h3>
                 </el-space>
                 <el-space 
                     v-for="item in Object.values(item[1])" 
