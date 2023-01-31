@@ -4,7 +4,7 @@
 import { titleFromTags } from '@/utils/tags'
 const { public: { backendAddress } } = useRuntimeConfig()
 
-const { pending, data } = useLazyAsyncData('entries', () => $fetch(`${backendAddress}/api/entries?tags=${selectedTags.value.join(',')}`))
+const { pending, data } = useLazyAsyncData('entries', () => $fetch(`${backendAddress}/api/entries?tags=${selectedTags.value.join(',')}`, { credentials: 'include' }))
 const refresh = () => refreshNuxtData('entries')
 
 const createItemFormIsOpen = useCreateItemFormIsOpen()
@@ -122,8 +122,9 @@ watch(data, (newData) => {
 })
 
 const update = async (key, value) => {
-    await $fetch(`${backendAddress}/api/entries`, {
+    await fetch(`${backendAddress}/api/entries`, {
         method: 'POST',
+        credentials: 'include', headers: useRequestHeaders(['cookie']),
         body: {
             key, value, 
             tags: selectedTags.value
@@ -135,6 +136,7 @@ const update = async (key, value) => {
 const deleteItem = async (key) => {
     await $fetch(`${backendAddress}/api/items`, {
         method: 'DELETE',
+        credentials: 'include',
         body: {
             key
         }
@@ -180,6 +182,7 @@ const deleteEntry = async (key, tags) => {
     console.log(key, tags)
     await $fetch(`${backendAddress}/api/entries`, {
         method: 'DELETE',
+        credentials: 'include',
         body: {
             key, tags
         }

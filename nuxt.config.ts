@@ -6,7 +6,7 @@ export default defineNuxtConfig({
 
         public: {
             dummyConfigPublic: 'public-config',
-            backendAddress: 'http://127.0.0.1:8080'
+            backendAddress: 'http://today-api.keays.test'
         }
     },
     

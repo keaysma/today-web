@@ -3,7 +3,9 @@
 import { tagIsDate, getTagColor, displayTag } from '@/utils/tags'
 
 const { public: { backendAddress } } = useRuntimeConfig()
-const { pending, data } = await useFetch(`${backendAddress}/api/all-tags`)
+const { pending, data, error } = await useLazyAsyncData('me', () => $fetch(`${backendAddress}/api/me`, { credentials: 'include', headers: useRequestHeaders(['cookie']) }))
+const refresh = () => refreshNuxtData('me')
+
 const getData = () => data
 const getTagsFromLocalStorage = () => JSON.parse(localStorage.getItem('lastSelectedTags')) || []
 
@@ -64,8 +66,14 @@ const querySearch = (queryString, cb) => {
 }
 
 
-if(process.client)
+if(process.client){
+    refresh()
     selectedTags.value = getTagsFromLocalStorage()
+    if(error.value){
+        console.log(`error`, error.value)
+        window.location.pathname = '/login'
+    }
+}
 </script>
 
 <template>
