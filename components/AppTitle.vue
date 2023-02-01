@@ -1,5 +1,5 @@
 <template>
-    <h1>Toodo.</h1>
+    <h1>Today.</h1>
 </template>
 
 <style scoped>
