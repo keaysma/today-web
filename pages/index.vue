@@ -1,3 +1,10 @@
+<script setup>
+    useHead({
+        title: 'Today.',
+        link: [{ rel: 'icon', type: 'image/png', href: '/favicon.ico' }],
+    })
+</script>
+
 <template>
     <div class="app-card">
         <el-card class="box-card" style="margin-bottom: 10px;">

@@ -3,8 +3,7 @@
 import { tagIsDate, getTagColor, displayTag } from '@/utils/tags'
 
 const { public: { backendAddress } } = useRuntimeConfig()
-const { pending, data, error } = await useLazyAsyncData('me', () => $fetch(`${backendAddress}/api/me`, { credentials: 'include', headers: useRequestHeaders(['cookie']) }))
-const refresh = () => refreshNuxtData('me')
+const data = ref()
 
 const getData = () => data
 const getTagsFromLocalStorage = () => JSON.parse(localStorage.getItem('lastSelectedTags')) || []
@@ -47,7 +46,7 @@ const selectedTags = useSelectedTags()
 const additionalTagOptions = useState('additionalTags', () => [])
 
 const querySearch = (queryString, cb) => {
-    const { items, entries } = getData().value || {
+    const { items, entries } = data.value || {
         items: [],
         entries: []
     }
@@ -67,11 +66,14 @@ const querySearch = (queryString, cb) => {
 
 
 if(process.client){
-    refresh()
-    selectedTags.value = getTagsFromLocalStorage()
-    if(error.value){
-        console.log(`error`, error.value)
-        //window.location.pathname = '/login'
+    try{
+        const res = await $fetch(`${backendAddress}/api/me`, 
+            { credentials: 'include' }
+        )
+        data.value = res
+        selectedTags.value = getTagsFromLocalStorage()
+    } catch {
+        window.location.pathname = '/login'
     }
 }
 </script>
@@ -80,7 +82,7 @@ if(process.client){
     <div
         class="card-header" 
         style="position: relative;"
-        v-loading="pending || !data"
+        v-loading="!data"
     >
         <el-space wrap style="margin-right: 75px;">
             <el-button v-if="selectedTags.length" plain type="info" class="button-new-tag ml-1" size="small" @click="clearAllTags">

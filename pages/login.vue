@@ -1,6 +1,10 @@
 <script setup>
 const { public: { backendAddress } } = useRuntimeConfig()
 
+useSeoMeta({
+    head: 'Today. - login'
+})
+
 const username = ref('')
 const password = ref('')
 const displayError = ref('')
@@ -29,11 +33,6 @@ const login = async () => {
     }
 
 }
-
-const test = async () => {
-    const res = await $fetch(`${backendAddress}/api/me`, {credentials: 'include'})
-    console.log({ res })
-}
 </script>
 
 <template>
@@ -61,6 +60,5 @@ const test = async () => {
                 <p style="color: red;">{{ displayError }}</p>
             </el-space>
         </el-card>
-        <ItemCreateForm/>
     </div>
 </template>
