@@ -71,7 +71,7 @@ if(process.client){
     selectedTags.value = getTagsFromLocalStorage()
     if(error.value){
         console.log(`error`, error.value)
-        window.location.pathname = '/login'
+        //window.location.pathname = '/login'
     }
 }
 </script>
