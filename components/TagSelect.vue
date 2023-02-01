@@ -3,7 +3,7 @@
 import { tagIsDate, getTagColor, displayTag } from '@/utils/tags'
 
 const { public: { backendAddress } } = useRuntimeConfig()
-const { pending, data, error } = await useFetch('me', () => $fetch(`${backendAddress}/api/me`, { credentials: 'include', headers: useRequestHeaders(['cookie']) }))
+const { pending, data, error } = await useLazyAsyncData('me', () => $fetch(`${backendAddress}/api/me`, { credentials: 'include', headers: useRequestHeaders(['cookie']) }))
 const refresh = () => refreshNuxtData('me')
 
 const getData = () => data
@@ -67,7 +67,7 @@ const querySearch = (queryString, cb) => {
 
 
 if(process.client){
-    //refresh()
+    refresh()
     selectedTags.value = getTagsFromLocalStorage()
     if(error.value){
         console.log(`error`, error.value)
