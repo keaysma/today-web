@@ -7,7 +7,6 @@ const { public: { backendAddress } } = useRuntimeConfig()
 const { pending, data } = useLazyAsyncData('entries', () => $fetch(`${backendAddress}/api/entries?tags=${selectedTags.value.join(',')}`, { credentials: 'include' }))
 const refresh = () => refreshNuxtData('entries')
 
-const createItemFormIsOpen = useCreateItemFormIsOpen()
 const selectedTags = useSelectedTags()
 watch(selectedTags, () => refresh())
 
@@ -122,9 +121,9 @@ watch(data, (newData) => {
 })
 
 const update = async (key, value) => {
-    await fetch(`${backendAddress}/api/entries`, {
+    await $fetch(`${backendAddress}/api/entries`, {
         method: 'POST',
-        credentials: 'include', headers: useRequestHeaders(['cookie']),
+        credentials: 'include', 
         body: {
             key, value, 
             tags: selectedTags.value
@@ -271,17 +270,6 @@ refresh()
                 </el-space>
             </el-space>
         </el-space>
-        <el-button 
-            v-if="!createItemFormIsOpen" 
-            plain
-            size="small"
-            type="primary" 
-            style="width: 50px;"
-            :disabled="!data?.items || !selectedTags.length" 
-            @click="createItemFormIsOpen = true" 
-        >
-            + New Item
-        </el-button>
     </el-space>
     <!-- <button @click="refresh">get</button> -->
 </template>

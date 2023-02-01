@@ -115,3 +115,6 @@ if(process.client){
         <el-button size="small" color="#000" style="position: absolute; top: 0; right: 0;" @click="addTodayTags">Today.</el-button>
     </div>
 </template>
+
+<style scoped>
+</style>
