@@ -1,6 +1,6 @@
 <!-- A multi-select component for selecting tags. Auto-fetches suggestions when text is entered. -->
 <script setup>
-import { tagIsDate, getTagColor, displayTag } from '@/utils/tags'
+import { tagIsDate, getTagType, getTagColor, displayTag } from '@/utils/tags'
 
 const { public: { backendAddress } } = useRuntimeConfig()
 const data = ref()
@@ -93,7 +93,8 @@ if(process.client){
                 :key="tag"
                 class="mx-1"
                 closable
-                :type="getTagColor(tag)"
+                :type="getTagType(tag)"
+                :color="getTagColor(tag)"
                 :disable-transitions="true"
                 @close="handleRemoveTag(tag)"
             >

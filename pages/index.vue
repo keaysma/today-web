@@ -12,6 +12,7 @@
                 <TagSelect/>
             </template>
             <Entries/>
+            <el-divider/>
             <ItemCreateForm/>
         </el-card>
     </div>

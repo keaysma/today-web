@@ -1,6 +1,6 @@
 <!-- A form for specifying settings for items. -->
 <script setup>
-import { getTagColor, displayTag } from '@/utils/tags'
+import { getTagColor, getTagType, displayTag } from '@/utils/tags'
 const { public: { backendAddress } } = useRuntimeConfig()
 const visible = useCreateItemFormIsOpen()
 const initialTags = useSelectedTags()
@@ -15,15 +15,24 @@ const handleRemoveTag = (removeTag) => {
     tagsModel.value = tagsModel.value.filter(tag => tag !== removeTag)
 }
 
+const typesWithCustomKeys = ["checkbox"]
+const availableTypes = ["checkbox", "h1", "h2", "h3", "p"]
+const typeModel = ref('checkbox')
+const selectType = (newValue) => typeModel.value = newValue
+
 const submit = async () => {
-    if(!inputModel.value || !tagsModel.value.length) return
-    
+    if(!typeModel.value || !tagsModel.value.length) return
+
+    const itype = typeModel.value
+    const key = typesWithCustomKeys.includes(itype) ? inputModel.value : `${(new Date()).getTime()}`
+    if(!itype || !key) return
+
     await $fetch(`${backendAddress}/api/items`, {
         method: 'POST',
         credentials: 'include',
         body: {
-            key: inputModel.value,
-            itype: 'checkbox',
+            key,
+            itype,
             tags: tagsModel.value
         }
     })
@@ -35,8 +44,22 @@ const submit = async () => {
 
 <template>
     <div v-if="visible">
-        <el-space direction="vertical" alignment="flex-start" style="margin-top: 20px;">
-            <el-input v-model="inputModel" placeholder="key" />
+        <el-space direction="vertical" alignment="flex-start">
+            <el-dropdown split-button type="plain" trigger="click" @command="selectType">
+                {{ typeModel }}
+                <template #dropdown>
+                    <el-dropdown-menu>
+                        <el-dropdown-item 
+                            v-for="itemType in availableTypes" 
+                            :key="itemType" 
+                            :command="itemType"
+                        >
+                            {{ itemType }}
+                        </el-dropdown-item>
+                    </el-dropdown-menu>
+                </template>
+            </el-dropdown>
+            <el-input v-if="typesWithCustomKeys.includes(typeModel)" v-model="inputModel" placeholder="key" />
             <el-space wrap>
                 <el-button plain size="small" @click="resetTags">reset</el-button>
                 <el-tag
@@ -44,7 +67,8 @@ const submit = async () => {
                     :key="tag"
                     class="mx-1"
                     closable
-                    :type="getTagColor(tag)"
+                    :type="getTagType(tag)"
+                    :color="getTagColor(tag)"
                     :disable-transitions="true"
                     @close="handleRemoveTag(tag)"
                 >

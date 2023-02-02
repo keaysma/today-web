@@ -189,6 +189,15 @@ const deleteEntry = async (key, tags) => {
     refresh()
 }
 
+let debounceTimeout
+const captureTextInput = (key, newValue) => {
+    if (debounceTimeout) clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(() => {
+        console.log({ key, newValue })
+        updateEntry(key, newValue)
+    }, 500);
+}
+
 refresh()
 </script>
 
@@ -233,18 +242,16 @@ refresh()
                 <el-space 
                     v-for="item in Object.values(item[1])" 
                     :key="item.key"
-                    class="entry"
-                    style="position: relative; width: 100%; justify-content: space-between;"
+                    :class="item.itype"
                 >
-                    <el-checkbox v-if="item.itype === 'checkbox'"
+                    <el-checkbox
+                        v-if="item.itype === 'checkbox'"
                         plain 
                         :label="item.key"
                         v-model="mappings.entriesValues[item.key]"
                         @change="updateEntry(item.key, (mappings.entriesValues[item.key]).toString())"
                     />
-                    <p v-else>{{ entriesMap[item.key]?.value }}</p>
-
-                    <div style="position: relative; height: 1px; width: 50px; background: #ccc;">
+                    <div v-if="item.itype === 'checkbox'" style="position: relative; height: 1px; width: 50px; background: #ccc;">
                         <p
                             v-if="item.itype === 'checkbox' && mappings.entries[item.key] !== undefined"
                             style="position: absolute; top: -50px; right: 10px; font-size: 2rem; color: #aaa;"
@@ -253,20 +260,36 @@ refresh()
                         </p>
                     </div>
 
+                    <el-input v-else-if="['h1', 'h2', 'h3'].includes(item.itype)" 
+                        :size="{ 'h1': 'large', 'h2': 'medium', 'h3': 'small' }[item.itype]"
+                        :placeholder="item.itype" style="width: 100%;"
+                        v-model="mappings.entriesValues[item.key]"
+                        @input="captureTextInput(item.key, mappings.entriesValues[item.key])"
+                    />
+                    
+                    <el-input v-else-if="['p'].includes(item.itype)" 
+                        type="textarea" 
+                        placeholder="write"
+                        v-model="mappings.entriesValues[item.key]"
+                        @input="captureTextInput(item.key, mappings.entriesValues[item.key])"
+                    />
+                    
+                    <p v-else>???</p>
+                    
                     <el-dropdown trigger="click">
-                        <el-button round text bg small class="el-dropdown-link">
-                            &middot;&middot;&middot;
-                        </el-button>
-                        <template #dropdown>
-                            <el-dropdown-item 
-                                v-if="item.itype === 'checkbox' && mappings.entries[item.key] !== undefined"
-                                @click="deleteEntry(item.key, mappings.entries[item.key].tags)"
-                            >
-                                clear
-                            </el-dropdown-item>
-                            <el-dropdown-item @click="deleteItem(item.key)">delete</el-dropdown-item>
-                        </template>
-                    </el-dropdown>
+                            <el-button round text bg small class="el-dropdown-link">
+                                &middot;&middot;&middot;
+                            </el-button>
+                            <template #dropdown>
+                                <el-dropdown-item 
+                                    v-if="mappings.entries[item.key] !== undefined"
+                                    @click="deleteEntry(item.key, mappings.entries[item.key].tags)"
+                                >
+                                    clear
+                                </el-dropdown-item>
+                                <el-dropdown-item @click="deleteItem(item.key)">delete</el-dropdown-item>
+                            </template>
+                        </el-dropdown>
                 </el-space>
             </el-space>
         </el-space>

@@ -10,6 +10,14 @@ html, body, #__nuxt {
     /* justify-content: center; */
 }
 
-.entry.entry>div:nth-child(2) {
+/* Entries styles but I'm too busy hacking to put them there */
+.checkbox>div:nth-child(2) {
+    flex: 1;
+}
+
+.h1>div:first-child, 
+.h2>div:first-child, 
+.h3>div:first-child, 
+.p>div:first-child {
     flex: 1;
 }

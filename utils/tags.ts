@@ -1,11 +1,23 @@
 export const tagIsDate = (tag: string) =>
     ['day', 'month', 'year'].includes(`${tag.split(':').at(0)}`)
 
-export const getTagColor = (tag: string) => {
+export const getTagType = (tag: string) => {
     if (tagIsDate(tag))
         return 'warning'
 
+    if(tag === 'blog')
+        return 'info'
+
     return ''
+}
+
+export const getTagColor = (tag: string) => {    
+    if(tag === 'blog'){
+        return '#eee'
+    }
+
+    return ''
+
 }
 
 export const displayTag = (tag: string) =>
