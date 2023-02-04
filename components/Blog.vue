@@ -3,12 +3,14 @@ import { titleFromTags } from '@/utils/tags'
 import { makeItemsMapping, makeItemsGroupsMapping, makeValuesMappingBase, makeEntriesMapping, makeValuesMapping } from '@/utils/mappings'
 const { public: { backendAddress } } = useRuntimeConfig()
 const route = useRoute();
-let selectedTags = ref(['blog', ... route.params.tags])
 //const { pending, data } = useFetch(`${backendAddress}/api/public/entries?tags=${selectedTags.value.join(',')}`)
-const { pending, data } = useLazyAsyncData('entries', () => $fetch(`${backendAddress}/api/entries?tags=${selectedTags.value.join(',')}`, { credentials: 'include' }))
-refreshNuxtData('entries')
+const { pending, data } = useLazyAsyncData('publication', () => $fetch(`${backendAddress}/api/publications?id=${route.params.publication}`, { credentials: 'include' }))
+refreshNuxtData('publication')
 
 let mappings = ref({
+    tags: [],
+    title: "",
+    group: "",
     items: {},
     itemsGroups: {},
     entries: {},
@@ -25,6 +27,9 @@ watch(data, (newData) => {
     const valuesMapping = makeValuesMapping(entriesMapping, itemsMapping)
     
     mappings.value = {
+        tags: newData.tags,
+        title: newData.title,
+        group: newData.group,
         items: itemsMapping,
         itemsGroups: itemsGroupsMapping,
         entries: entriesMapping,
@@ -38,12 +43,12 @@ watch(data, (newData) => {
 </script>
 
 <template>
-    <el-space direction="vertical" alignment="start" style="margin: auto; width: 400px;">
+    <div class="container">
         <el-space>
             <el-tag
-                v-for="tag in selectedTags"
+                v-for="tag in mappings.tags"
                 :key="tag"
-                class="mx-1"
+                style="padding: 0 5px;"
                 :type="getTagType(tag)"
                 :color="getTagColor(tag)"
                 :disable-transitions="true"
@@ -52,6 +57,9 @@ watch(data, (newData) => {
                 {{ displayTag(tag) }}
             </el-tag>
         </el-space>
+        <h1 class="header">{{ mappings.title }}</h1>
+        <span class="subheader">by {{ mappings.group }}</span>
+        <el-divider/>
         <div v-for="item in mappings.items" :key="item.key">
             <h1 v-if="item.itype=='h1'">{{ mappings.entriesValues[item.key] }}</h1>
             <h2 v-if="item.itype=='h2'">{{ mappings.entriesValues[item.key] }}</h2>
@@ -63,12 +71,36 @@ watch(data, (newData) => {
                 style="width: 100%;"
             />
         </div>
-    </el-space>
+    </div>
 </template>
 
 <style scoped>
-    h1, p {
+    h1, p, span {
         margin: 0;
         padding: 0;
     }
+
+    .container {
+        max-width: 400px;
+        width: 95%;
+        margin: 10px;
+    }
+
+    .header {
+        margin-top: 4px;
+        font-size: 3rem;
+    }
+
+    .subheader {
+        font-size: 1rem;
+        color: #999;
+    }
+
+    @media screen and (min-width: 768px) {
+        .container {
+            margin: auto;
+            width: 400px;
+        }
+    }
+
 </style>

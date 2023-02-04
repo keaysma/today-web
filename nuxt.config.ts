@@ -45,7 +45,8 @@ export default defineNuxtConfig({
             mobileApp: true,
             // Generate splash screens for iOS
             mobileAppIOS: true,
-            appleStatusBarStyle: 'black'
+            appleStatusBarStyle: 'default',
+            theme_color: '#FFF',
         },
     },
 

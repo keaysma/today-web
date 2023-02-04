@@ -65,7 +65,7 @@ const eqSet = (xs, ys) =>
 const updateEntry = async (key, newValue) => {
     const item = mappings.value.items[key]
     const entry = mappings.value.entries[key]
-    console.log(data.value.entries)
+    //console.debug(data.value.entries)
 
     const tags = [ ... new Set([
         ... item.tags,
@@ -77,7 +77,7 @@ const updateEntry = async (key, newValue) => {
             return e.key === key && 
                 eqSet(
                     new Set(e.tags.map(tag => tag.toLowerCase())), 
-                    new Set(selectedTags.value.map(tag => tag.toLowerCase()))
+                    new Set(tags.map(tag => tag.toLowerCase()))
                 )
         }
     )
@@ -87,7 +87,7 @@ const updateEntry = async (key, newValue) => {
     console.debug('checkbox')
     if(item.itype === 'checkbox' && newValue === 'false' && exactEntry !== undefined){
         console.debug('delete', { key, tags })
-        return deleteEntry(key, selectedTags.value)
+        return deleteEntry(key, tags)
     }
 
     console.debug('update')
