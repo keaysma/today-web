@@ -37,6 +37,12 @@ watch(data, (newData) => {
     }
 })
 
+const nextCheckboxValue = (value) => ({
+    'true': 'strike',
+    'strike': 'false',
+    'false': 'true'
+}[value] || 'true')
+
 const update = async (key, value, tags) => {
     await $fetch(`${backendAddress}/api/entries`, {
         method: 'POST',
@@ -82,16 +88,22 @@ const updateEntry = async (key, newValue) => {
         }
     )
 
-    console.debug({ item, entry, tags, newValue, exactEntry })
+    const newValueCalc = newValue === 'false' && exactEntry 
+        ? 'strike'
+        : exactEntry
+            ? 'false'
+            : 'true' 
+
+    console.debug({ item, entry, tags, newValueCalc, exactEntry })
 
     console.debug('checkbox')
-    if(item.itype === 'checkbox' && newValue === 'false' && exactEntry !== undefined){
+    if(item.itype === 'checkbox' && newValueCalc === 'false' && exactEntry !== undefined){
         console.debug('delete', { key, tags })
         return deleteEntry(key, tags)
     }
 
     console.debug('update')
-    return update(key, newValue, tags)
+    return update(key, newValueCalc, tags)
 }
 
 const deleteEntry = async (key, tags) => {
@@ -162,8 +174,9 @@ const captureTextInput = (key, newValue) => {
                         v-if="item.itype === 'checkbox'"
                         plain 
                         :label="item.key"
+                        :indeterminate="mappings.entriesValues[item.key] === undefined"
                         v-model="mappings.entriesValues[item.key]"
-                        @change="updateEntry(item.key, (mappings.entriesValues[item.key]).toString())"
+                        @change="updateEntry(item.key, (mappings.entriesValues[item.key].toString()))"
                     />
                     <div v-if="item.itype === 'checkbox'" style="position: relative; height: 1px; width: 50px; background: #ccc;">
                         <p

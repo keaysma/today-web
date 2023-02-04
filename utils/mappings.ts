@@ -80,12 +80,20 @@ export const makeEntriesMapping = (entries: Entry[], tags: string[]) => entries.
     {}
 )
 
+const chechboxValueMap: Record<string, boolean | undefined> = {
+    'true': true,
+    'false': false,
+    'strike': undefined
+}
+
 export const makeValuesMapping = (entriesMapping: Record<string, Entry>, itemsMapping: Record<string, Item>) => Object.entries(entriesMapping).reduce(
     (acc, [k, { value, key }]) => {
         const item = itemsMapping[key]
         if(!item) return acc
 
-        const parsedValue = item.itype === 'checkbox' ? value === 'true' : value
+        const parsedValue = item.itype === 'checkbox' 
+            ? chechboxValueMap[value]
+            : value
 
         return { 
             ... acc, 
