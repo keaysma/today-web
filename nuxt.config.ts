@@ -21,5 +21,14 @@ export default defineNuxtConfig({
     ],
     css: [
         '@/assets/css/global.css'
-    ]
+    ],
+    pwa: {
+        manifest: {
+            name: 'Today.',
+        },
+        meta: {
+          // Generate splash screens for iOS
+          mobileAppIOS: true,
+        },
+    },
 })
