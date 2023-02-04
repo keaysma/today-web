@@ -163,7 +163,7 @@ const captureTextInput = (key, newValue) => {
                 alignment="flex-start" style="width: 100%;" :fill="true"
             >
                 <el-space spacer="|">
-                    <h3 v-for="title in titleFromTags(item[0])" :key="title">{{ title.replaceAll('"', '').trim() }}</h3>
+                    <h3 v-for="title in titleFromTags(item[0])" :key="title" class="section-title">{{ title.replaceAll('"', '').trim() }}</h3>
                 </el-space>
                 <el-space 
                     v-for="item in Object.values(item[1])" 
@@ -173,6 +173,7 @@ const captureTextInput = (key, newValue) => {
                     <el-checkbox
                         v-if="item.itype === 'checkbox'"
                         plain 
+                        :class="(mappings.entriesValues[item.key] === undefined) ? 'strike' : ''"
                         :label="item.key"
                         :indeterminate="mappings.entriesValues[item.key] === undefined"
                         v-model="mappings.entriesValues[item.key]"
@@ -224,12 +225,17 @@ const captureTextInput = (key, newValue) => {
     <!-- <button @click="refresh">get</button> -->
 </template>
 
-<style scoped>
-h3 {
+<style>
+.section-title {
     font-size: 0.75rem;
     color: #aaa;
 
     margin: 0;
     padding: 0;
 }
+
+.strike>.el-checkbox__label {
+    text-decoration: line-through;
+}
+
 </style>
