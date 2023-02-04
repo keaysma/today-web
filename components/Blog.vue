@@ -44,7 +44,6 @@ watch(data, (newData) => {
                 v-for="tag in selectedTags"
                 :key="tag"
                 class="mx-1"
-                closable
                 :type="getTagType(tag)"
                 :color="getTagColor(tag)"
                 :disable-transitions="true"
