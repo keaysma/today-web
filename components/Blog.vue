@@ -60,7 +60,7 @@ watch(data, (newData) => {
         <h1 class="header">{{ mappings.title }}</h1>
         <span class="subheader">by {{ mappings.group }}</span>
         <el-divider/>
-        <div v-for="item in mappings.items" :key="item.key" :class="item.itype" style="margin: 10px 0;">
+        <div v-for="item in mappings.items" :key="item.key" :class="item.itype">
             <h1 v-if="item.itype=='h1'">{{ mappings.entriesValues[item.key] }}</h1>
             <h2 v-if="item.itype=='h2'">{{ mappings.entriesValues[item.key] }}</h2>
             <h3 v-if="item.itype=='h3'">{{ mappings.entriesValues[item.key] }}</h3>
@@ -79,6 +79,10 @@ watch(data, (newData) => {
     h1, h2, h3, p, sub {
         margin: 0;
         padding: 0;
+    }
+
+    .h1,.p{
+        margin: 20px 0;
     }
 
     .caption {
@@ -111,6 +115,8 @@ watch(data, (newData) => {
     @media screen and (min-width: 768px) {
         .container {
             margin: auto;
+            padding-top: 50px;
+            padding-bottom: 50px;
             width: 400px;
         }
     }
