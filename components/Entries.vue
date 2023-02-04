@@ -2,6 +2,7 @@
 
 <script setup>
 import { titleFromTags } from '@/utils/tags'
+import { makeItemsMapping, makeItemsGroupsMapping, makeValuesMappingBase, makeEntriesMapping, makeValuesMapping } from '@/utils/mappings'
 const { public: { backendAddress } } = useRuntimeConfig()
 
 const { pending, data } = useLazyAsyncData('entries', () => $fetch(`${backendAddress}/api/entries?tags=${selectedTags.value.join(',')}`, { credentials: 'include' }))
@@ -17,90 +18,13 @@ let mappings = ref({
     entriesValues: {}
 })
 watch(data, (newData) => {
-    const itemsMapping = newData.items.reduce(
-        (acc, item) => ({
-            ... acc,
-            [item.key]: item
-        }),
-        {}
-    )
+    const itemsMapping = makeItemsMapping(newData.items)
+    const itemsGroupsMapping = makeItemsGroupsMapping(newData.items)
+    const valuesMappingBase = makeValuesMappingBase(itemsMapping)
 
-    const itemsGroupsMapping = newData.items.reduce(
-        (acc, item) => {
-            const group = item.tags.join(', ')
-            return {
-                ... acc,
-                [group]: {
-                    ... (acc[group] || {}),
-                    [item.key]: item
-                }
-            }
-        },
-        {}
-    )
-
-    const valuesMappingBase = Object.entries(itemsMapping).reduce(
-        (acc, [key, { itype }]) => ({
-            ... acc,
-            [key]: itype === 'checkbox' ? false : ''
-        }),
-        {}
-    )
-
-    const entriesMapping = newData.entries.reduce(
-        (acc, entry) => {
-            let selectedEntry = entry
-            const existingEntry = acc[entry.key]
-
-            /*if(existingEntry)
-                return {
-                    ... acc,
-                    [entry.key + ' (dup) ']: selectedEntry
-                }
-
-            return {
-                ... acc,
-                [entry.key]: selectedEntry
-            }*/
-
-            if(existingEntry){
-                const dotEntry = selectedTags.value.filter(x => entry.tags.includes(x))
-                const dotExistingEntry = selectedTags.value.filter(x => existingEntry.tags.includes(x))
-                if(dotExistingEntry.length > dotEntry.length){
-                    return {
-                        ... acc,
-                        [`${entry.key} (dup)`]: entry
-                    }
-                }else{
-                    return {
-                        ... acc,
-                        [`${entry.key} (dup)`]: existingEntry,
-                        [entry.key]: entry
-                    }
-                }
-            }
-            return {
-                ... acc,
-                [entry.key]: entry
-            }
-        },
-        {}
-    )
+    const entriesMapping = makeEntriesMapping(newData.entries)
     
-    const valuesMapping = Object.entries(entriesMapping).reduce(
-        (acc, [k, { value, key }]) => {
-            const item = itemsMapping[key]
-            if(!item) return acc
-
-            const parsedValue = item.itype === 'checkbox' ? value === 'true' : value
-
-            return { 
-                ... acc, 
-                [k]: parsedValue
-            }
-        }, 
-        {}
-    )
+    const valuesMapping = makeValuesMapping(entriesMapping, itemsMapping)
     
     mappings.value = {
         items: itemsMapping,
@@ -250,7 +174,7 @@ const captureTextInput = (key, newValue) => {
                         </p>
                     </div>
 
-                    <el-input v-else-if="['h1', 'h2', 'h3'].includes(item.itype)" 
+                    <el-input v-else-if="['h1', 'h2', 'h3', 'image'].includes(item.itype)" 
                         :size="{ 'h1': 'large', 'h2': 'medium', 'h3': 'small' }[item.itype]"
                         :placeholder="item.itype" style="width: 100%;"
                         v-model="mappings.entriesValues[item.key]"

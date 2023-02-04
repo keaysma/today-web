@@ -18,6 +18,7 @@ html, body, #__nuxt {
 .h1>div:first-child, 
 .h2>div:first-child, 
 .h3>div:first-child, 
+.image>div:first-child, 
 .p>div:first-child {
     flex: 1;
 }

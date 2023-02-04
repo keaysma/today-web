@@ -294,6 +294,15 @@
   resolved "https://registry.yarnpkg.com/@element-plus/icons-vue/-/icons-vue-2.0.10.tgz#60808d613c3dbdad025577022be8a972739ade21"
   integrity sha512-ygEZ1mwPjcPo/OulhzLE7mtDrQBWI8vZzEWSNB2W/RNCRjoQGwbaK4N8lV4rid7Ts4qvySU3njMN7YCiSlSaTQ==
 
+"@element-plus/nuxt@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@element-plus/nuxt/-/nuxt-1.0.3.tgz#aad7cc2873a8dd3aa5dfc73085bd8662bc84c614"
+  integrity sha512-CAmW6bapnVMax5GWxFLtKHPTfmcGuZJyM4p36a5XXUQaUfFxphgEhheEFeNDJn1rd6pMupOMOFFPkYwMPHqMNg==
+  dependencies:
+    "@nuxt/kit" "^3.0.0"
+    magic-string "^0.27.0"
+    unplugin "^1.0.1"
+
 "@esbuild/android-arm64@0.16.17":
   version "0.16.17"
   resolved "https://registry.yarnpkg.com/@esbuild/android-arm64/-/android-arm64-0.16.17.tgz#cf91e86df127aa3d141744edafcba0abdc577d23"

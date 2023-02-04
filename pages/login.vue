@@ -33,6 +33,18 @@ const login = async () => {
     }
 
 }
+
+if(process.client){
+    try{
+        const res = await $fetch(`${backendAddress}/api/me`, 
+            { credentials: 'include' }
+        )
+        if(res.items !== undefined){
+            window.location.pathname = '/'
+        }
+    } catch {
+    }
+}
 </script>
 
 <template>

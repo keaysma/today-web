@@ -18,7 +18,7 @@ const handleRemoveTag = (removeTag) => {
 }
 
 const typesWithCustomKeys = ["checkbox"]
-const availableTypes = ["checkbox", "h1", "h2", "h3", "p"]
+const availableTypes = ["checkbox", "h1", "h2", "h3", "p", "image"]
 const typeModel = ref('checkbox')
 const selectType = (newValue) => typeModel.value = newValue
 

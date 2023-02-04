@@ -18,17 +18,39 @@ export default defineNuxtConfig({
     runtimeConfig: process.env.NODE_ENV !== 'production' ? devConfig : prodConfig,
     modules: [
         '@kevinmarrec/nuxt-pwa',
+        '@element-plus/nuxt',
     ],
     css: [
         '@/assets/css/global.css'
     ],
+    typescript: {
+        strict: true,
+        shim: false,
+    },
+    app: {
+        head: {
+            meta: [
+                { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+            ],
+            link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+        }
+    },
+
+    // https://github.com/kevinmarrec/nuxt-pwa-module/blob/main/src/module.ts
     pwa: {
-        manifest: {
-            name: 'Today.',
-        },
         meta: {
-          // Generate splash screens for iOS
-          mobileAppIOS: true,
+            name: 'Today.',
+            author: 'Michael-Andrew Keays',
+            
+            mobileApp: true,
+            // Generate splash screens for iOS
+            mobileAppIOS: true,
+            appleStatusBarStyle: 'black'
         },
+    },
+
+    // https://github.com/element-plus/element-plus-nuxt-starter/blob/main/nuxt.config.ts
+    elementPlus: {
+        icon: 'ElIcon',
     },
 })

@@ -118,10 +118,10 @@ if(process.client){
                     placeholder="Please Input"
                     @select="handleAddTag"
                 />
-                <el-button v-else ref="AddTagRef" plain type="info" class="button-new-tag ml-1" size="small" @click="showInput">
+                <el-button v-else ref="AddTagRef" plain type="success" class="button-new-tag ml-1" size="small" @click="showInput">
                     + list
                 </el-button>
-                <el-button v-if="selectedTags.length" plain type="info" class="button-new-tag ml-1" size="small" @click="clearAllTags">
+                <el-button v-if="selectedTags.length" plain type="danger" class="button-new-tag ml-1" size="small" @click="clearAllTags">
                     clear
                 </el-button>
             </el-space>

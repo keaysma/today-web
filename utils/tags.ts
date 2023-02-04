@@ -8,6 +8,9 @@ export const getTagType = (tag: string) => {
     if (tagIsDate(tag))
         return 'warning'
 
+    if (tagIsMagic(tag))
+        return 'success'
+
     if(tag === 'blog')
         return 'info'
 
@@ -15,6 +18,9 @@ export const getTagType = (tag: string) => {
 }
 
 export const getTagColor = (tag: string) => {    
+    if (tagIsMagic(tag) && !tagIsDate(tag))
+        return ''
+    
     if(tag === 'blog'){
         return '#eee'
     }
