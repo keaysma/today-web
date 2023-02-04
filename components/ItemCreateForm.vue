@@ -9,6 +9,8 @@ const inputModel = ref('')
 const tagsModel = ref([])
 watch(initialTags, (newTags) => {
     tagsModel.value = newTags
+    if(newTags.length < 1)
+        visible.value = false
 })
 const resetTags = () => tagsModel.value = initialTags.value
 const handleRemoveTag = (removeTag) => {

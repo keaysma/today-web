@@ -16,7 +16,9 @@ const prodConfig = {
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
     runtimeConfig: process.env.NODE_ENV !== 'production' ? devConfig : prodConfig,
-    
+    modules: [
+        '@kevinmarrec/nuxt-pwa',
+    ],
     css: [
         '@/assets/css/global.css'
     ]

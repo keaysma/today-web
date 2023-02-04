@@ -101,13 +101,6 @@ watch(data, (newData) => {
         }, 
         {}
     )
-
-    console.log({
-        itemsMapping, itemsGroupsMapping, entriesMapping, valuesMapping, valuesMappingBase, entriesValues: {
-            ... valuesMappingBase,
-            ... valuesMapping
-        }
-    })
     
     mappings.value = {
         items: itemsMapping,
@@ -120,13 +113,12 @@ watch(data, (newData) => {
     }
 })
 
-const update = async (key, value) => {
+const update = async (key, value, tags) => {
     await $fetch(`${backendAddress}/api/entries`, {
         method: 'POST',
         credentials: 'include', 
         body: {
-            key, value, 
-            tags: selectedTags.value
+            key, value, tags
         }
     })
     refresh()
@@ -150,6 +142,12 @@ const updateEntry = async (key, newValue) => {
     const item = mappings.value.items[key]
     const entry = mappings.value.entries[key]
     console.log(data.value.entries)
+
+    const tags = [ ... new Set([
+        ... item.tags,
+        ... selectedTags.value.filter(tagIsMagic)
+    ])]
+
     const exactEntry = data.value.entries.find(
         (e) => {
             return e.key === key && 
@@ -160,21 +158,16 @@ const updateEntry = async (key, newValue) => {
         }
     )
 
-    console.debug({ item, entry, newValue, exactEntry })
-
-    if(item.itype !== 'checkbox'){
-        console.debug('other')
-        return update(key, newValue)
-    }
+    console.debug({ item, entry, tags, newValue, exactEntry })
 
     console.debug('checkbox')
-    if(newValue === 'false' && exactEntry !== undefined){
-        console.debug('delete', { key, tags: selectedTags.value })
+    if(item.itype === 'checkbox' && newValue === 'false' && exactEntry !== undefined){
+        console.debug('delete', { key, tags })
         return deleteEntry(key, selectedTags.value)
     }
 
     console.debug('update')
-    return update(key, newValue)
+    return update(key, newValue, tags)
 }
 
 const deleteEntry = async (key, tags) => {
@@ -193,12 +186,9 @@ let debounceTimeout
 const captureTextInput = (key, newValue) => {
     if (debounceTimeout) clearTimeout(debounceTimeout);
     debounceTimeout = setTimeout(() => {
-        console.log({ key, newValue })
         updateEntry(key, newValue)
     }, 500);
 }
-
-refresh()
 </script>
 
 <template>

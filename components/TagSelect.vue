@@ -8,6 +8,25 @@ const data = ref()
 const getData = () => data
 const getTagsFromLocalStorage = () => JSON.parse(localStorage.getItem('lastSelectedTags')) || []
 
+const calendar = ref()
+const selectCalendarDate = (val, e) => {
+    calendar.value.selectDate(val)
+}
+
+const dropdown = ref()
+const selectedDate = ref(new Date())
+const selectDate = (event) => {
+    //console.log({event, selectedDate: selectedDate.value})
+
+    const skipSelect = event.target.classList.contains('no-select') || event.target.parentElement.classList.contains('no-select')
+    //console.log(skipSelect)
+
+    if(!skipSelect){
+        addDateTags(selectedDate.value)
+        dropdown.value.handleClose()
+    }
+}
+
 const inputVisible = ref(false)
 const inputValue = ref('')
 const AddTagRef = ref()
@@ -24,14 +43,16 @@ const handleAddTag = () => {
     localStorage.setItem('lastSelectedTags', JSON.stringify(selectedTags.value))
     nextTick(() =>  AddTagRef?.value?.ref?.focus())
 }
-const addTodayTags = () => {
-    const today = new Date()
+const addDateTags = (date) => {
 
-    const day = today.getDate().toString()
-    const year = today.getFullYear().toString()
-    const month = today.toLocaleString('default', { month: 'long' })
+    const day = date.getDate().toString()
+    const year = date.getFullYear().toString()
+    const month = date.toLocaleString('default', { month: 'long' })
 
-    selectedTags.value = [... selectedTags.value, `month:${month}`, `day:${day}`, `year:${year}`].map(tag => tag.toLowerCase())
+    selectedTags.value = [
+        ... selectedTags.value.filter(tag => !tagIsDate(tag)), 
+        ...[`month:${month}`, `day:${day}`, `year:${year}`].map(tag => tag.toLowerCase())
+    ]
     localStorage.setItem('lastSelectedTags', JSON.stringify(selectedTags.value))
 }
 const handleRemoveTag = (removeTag) => {
@@ -84,38 +105,79 @@ if(process.client){
         style="position: relative;"
         v-loading="!data"
     >
-        <el-space wrap style="margin-right: 75px;">
-            <el-button v-if="selectedTags.length" plain type="info" class="button-new-tag ml-1" size="small" @click="clearAllTags">
-                clear
-            </el-button>
-            <el-tag
-                v-for="tag in selectedTags"
-                :key="tag"
-                class="mx-1"
-                closable
-                :type="getTagType(tag)"
-                :color="getTagColor(tag)"
-                :disable-transitions="true"
-                @close="handleRemoveTag(tag)"
-            >
-                {{ displayTag(tag) }}
-            </el-tag>
-            <el-autocomplete
-                v-if="inputVisible"
-                clearable
-                size="small"
-                ref="InputRef"
-                v-model="inputValue"
-                :fetch-suggestions="querySearch"
-                class="inline-input w-50"
-                placeholder="Please Input"
-                @select="handleAddTag"
-            />
-            <el-button v-else ref="AddTagRef" plain type="info" class="button-new-tag ml-1" size="small" @click="showInput">
-                + list
-            </el-button>
+        <el-space direction="vertical" alignment="start">
+            <el-space wrap style="margin-right: 75px;">
+                <el-autocomplete
+                    v-if="inputVisible"
+                    clearable
+                    size="small"
+                    ref="InputRef"
+                    v-model="inputValue"
+                    :fetch-suggestions="querySearch"
+                    class="inline-input w-50"
+                    placeholder="Please Input"
+                    @select="handleAddTag"
+                />
+                <el-button v-else ref="AddTagRef" plain type="info" class="button-new-tag ml-1" size="small" @click="showInput">
+                    + list
+                </el-button>
+                <el-button v-if="selectedTags.length" plain type="info" class="button-new-tag ml-1" size="small" @click="clearAllTags">
+                    clear
+                </el-button>
+            </el-space>
+            <el-space wrap style="margin-right: 75px;">
+                <el-tag
+                    v-for="tag in selectedTags"
+                    :key="tag"
+                    class="mx-1"
+                    closable
+                    :type="getTagType(tag)"
+                    :color="getTagColor(tag)"
+                    :disable-transitions="true"
+                    @close="handleRemoveTag(tag)"
+                >
+                    {{ displayTag(tag) }}
+                </el-tag>
+            </el-space>
         </el-space>
-        <el-button size="small" color="#000" style="position: absolute; top: 0; right: 0;" @click="addTodayTags">Today.</el-button>
+        <el-dropdown 
+            split-button 
+            type="primary" 
+            color="red"
+            size="small"
+            trigger="click" 
+            style="position: absolute; top: 0; right: 0;"
+            ref="dropdown"
+            @click="addDateTags(new Date())"
+        >
+            Today.
+            <template #dropdown>
+                <el-calendar
+                    ref="calendar"
+                    v-model="selectedDate"
+                    @click="selectDate"
+                >
+                    <template #header="{ date }">
+                        <span>{{ date }}</span>
+                        <el-button-group>
+                            <el-button class="no-select" size="small" @click="selectCalendarDate('prev-year')">
+                                Previous Year
+                            </el-button>
+                            <el-button class="no-select" size="small" @click="selectCalendarDate('prev-month')">
+                                Previous Month
+                            </el-button>
+                            <el-button class="no-select" size="small" @click="selectCalendarDate('today')">Today</el-button>
+                            <el-button class="no-select" size="small" @click="selectCalendarDate('next-month')">
+                                Next Month
+                            </el-button>
+                            <el-button class="no-select" size="small" @click="selectCalendarDate('next-year')">
+                                Next Year
+                            </el-button>
+                        </el-button-group>
+                    </template>
+                </el-calendar>
+            </template>
+        </el-dropdown>
     </div>
 </template>
 

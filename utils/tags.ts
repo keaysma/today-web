@@ -1,5 +1,8 @@
+export const tagIsMagic = (tag: string) =>
+    tag.split(':').length === 2
+
 export const tagIsDate = (tag: string) =>
-    ['day', 'month', 'year'].includes(`${tag.split(':').at(0)}`)
+    tagIsMagic(tag) && ['day', 'month', 'year'].includes(`${tag.split(':').at(0)}`)
 
 export const getTagType = (tag: string) => {
     if (tagIsDate(tag))
