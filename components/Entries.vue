@@ -181,7 +181,7 @@ const captureTextInput = (key, newValue) => {
                         @input="captureTextInput(item.key, mappings.entriesValues[item.key])"
                     />
                     
-                    <el-input v-else-if="['p'].includes(item.itype)" 
+                    <el-input v-else-if="['p', 'caption'].includes(item.itype)" 
                         type="textarea" 
                         placeholder="write"
                         v-model="mappings.entriesValues[item.key]"
