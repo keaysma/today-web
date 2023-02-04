@@ -94,7 +94,7 @@ watch(data, (newData) => {
     }
 
     .container {
-        max-width: 400px;
+        max-width: 768px;
         width: 95%;
         margin: 10px;
 
@@ -117,7 +117,6 @@ watch(data, (newData) => {
             margin: auto;
             padding-top: 50px;
             padding-bottom: 50px;
-            width: 400px;
         }
     }
 
