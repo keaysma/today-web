@@ -21,6 +21,7 @@ html, body, #__nuxt {
 .h3>div:first-child, 
 .image>div:first-child, 
 .caption>div:first-child, 
+.markdown>div:first-child, 
 .p>div:first-child {
     flex: 1;
 }

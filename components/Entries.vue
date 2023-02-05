@@ -83,15 +83,18 @@ const updateEntry = async (key, newValue) => {
         }
     )
 
-    const newValueCalc = newValue === 'false' && exactEntry 
-        ? 'strike'
-        : exactEntry
-            ? 'false'
-            : 'true' 
+    const newValueCalc = checkboxTypes.includes(item.itype)
+        ? (
+            newValue === 'false' && exactEntry 
+            ? 'strike'
+            : exactEntry
+                ? 'false'
+                : 'true' 
+        )
+        : newValue
 
     console.debug({ item, entry, tags, newValueCalc, exactEntry })
 
-    console.debug('checkbox')
     if(checkboxTypes.includes(item.itype) && newValueCalc === 'false' && exactEntry !== undefined){
         console.debug('delete', { key, tags })
         return deleteEntry(key, tags)
@@ -143,12 +146,12 @@ const captureTextInput = (key, newValue) => {
                         v-if="checkboxTypes.includes(item.itype)"
                         plain 
                         :class="(mappings.entriesValues[item.key] === undefined) ? 'strike' : ''"
-                        :label="item.key"
                         :indeterminate="mappings.entriesValues[item.key] === undefined"
                         v-model="mappings.entriesValues[item.key]"
                         @change="updateEntry(item.key, (mappings.entriesValues[item.key].toString()))"
                     >
-                        <el-link :href="item.config.link" target="_blank" v-if="item.config.link">{{ item.key }}</el-link>
+                        <el-link :href="item.config.link" target="_blank" v-if="item.config.link" type="primary">{{ item.key }}</el-link>
+                        <span v-else>{{ item.key }}</span>
                     </el-checkbox>
                     <div v-if="checkboxTypes.includes(item.itype)" style="position: relative; height: 1px; width: 50px; background: #ccc;">
                         <p
@@ -166,7 +169,7 @@ const captureTextInput = (key, newValue) => {
                         @input="captureTextInput(item.key, mappings.entriesValues[item.key])"
                     />
                     
-                    <el-input v-else-if="['p', 'caption'].includes(item.itype)" 
+                    <el-input v-else-if="['p', 'caption', 'markdown'].includes(item.itype)" 
                         type="textarea" 
                         placeholder="write"
                         v-model="mappings.entriesValues[item.key]"
