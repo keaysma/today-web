@@ -6,6 +6,7 @@ const visible = useCreateItemFormIsOpen()
 const initialTags = useSelectedTags()
 
 const inputModel = ref('')
+const linkModel = ref('')
 const tagsModel = ref([])
 watch(initialTags, (newTags) => {
     tagsModel.value = newTags
@@ -17,8 +18,9 @@ const handleRemoveTag = (removeTag) => {
     tagsModel.value = tagsModel.value.filter(tag => tag !== removeTag)
 }
 
-const typesWithCustomKeys = ["checkbox"]
-const availableTypes = ["checkbox", "h1", "h2", "h3", "p", "image", "caption"]
+const typesWithCustomKeys = ["checkbox", "checkbox-link"]
+const typesWithLinkConfig = ["checkbox-link"]
+const availableTypes = ["checkbox", "checkbox-link", "markdown", "h1", "h2", "h3", "p", "image", "caption"]
 const typeModel = ref('checkbox')
 const selectType = (newValue) => typeModel.value = newValue
 
@@ -28,6 +30,11 @@ const submit = async () => {
     const itype = typeModel.value
     const key = typesWithCustomKeys.includes(itype) ? inputModel.value : `${(new Date()).getTime()}`
     if(!itype || !key) return
+    
+    const config = {}
+    if(typesWithLinkConfig.includes(itype)){
+        config['link'] = linkModel.value
+    }
 
     await $fetch(`${backendAddress}/api/items`, {
         method: 'POST',
@@ -35,7 +42,8 @@ const submit = async () => {
         body: {
             key,
             itype,
-            tags: tagsModel.value
+            config,
+            tags: tagsModel.value,
         }
     })
     inputModel.value = ''
@@ -62,6 +70,7 @@ const submit = async () => {
                 </template>
             </el-dropdown>
             <el-input v-if="typesWithCustomKeys.includes(typeModel)" v-model="inputModel" placeholder="key" />
+            <el-input v-if="typesWithLinkConfig.includes(typeModel)" v-model="linkModel" placeholder="link" />
             <el-space wrap>
                 <el-button plain size="small" @click="resetTags">reset</el-button>
                 <el-tag

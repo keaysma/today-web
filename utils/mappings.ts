@@ -10,6 +10,8 @@ interface Entry {
     tags: string[]
 }
 
+export const checkboxTypes = ["checkbox", "checkbox-link"]
+
 export const makeItemsMapping = (items: Item[]) => items.reduce(
     (acc, item) => ({
         ... acc,
@@ -35,7 +37,7 @@ export const makeItemsGroupsMapping = (items: Item[]) => items.reduce<Record<str
 export const makeValuesMappingBase = (itemsMapping: Record<string, Item>) => Object.entries(itemsMapping).reduce(
     (acc, [key, { itype }]) => ({
         ... acc,
-        [key]: itype === 'checkbox' ? false : ''
+        [key]: checkboxTypes.includes(itype) ? false : ''
     }),
     {}
 )
@@ -91,7 +93,7 @@ export const makeValuesMapping = (entriesMapping: Record<string, Entry>, itemsMa
         const item = itemsMapping[key]
         if(!item) return acc
 
-        const parsedValue = item.itype === 'checkbox' 
+        const parsedValue = checkboxTypes.includes(item.itype)
             ? chechboxValueMap[value]
             : value
 

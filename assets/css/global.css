@@ -11,7 +11,8 @@ html, body, #__nuxt {
 }
 
 /* Entries styles but I'm too busy hacking to put them there */
-.checkbox>div:nth-child(2) {
+.checkbox>div:nth-child(2),
+.checkbox-link>div:nth-child(2) {
     flex: 1;
 }
 

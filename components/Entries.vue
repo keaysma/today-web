@@ -2,7 +2,8 @@
 
 <script setup>
 import { titleFromTags } from '@/utils/tags'
-import { makeItemsMapping, makeItemsGroupsMapping, makeValuesMappingBase, makeEntriesMapping, makeValuesMapping } from '@/utils/mappings'
+import { makeItemsMapping, makeItemsGroupsMapping, makeValuesMappingBase, makeEntriesMapping, makeValuesMapping, checkboxTypes } from '@/utils/mappings'
+import { ElDivider } from 'element-plus';
 const { public: { backendAddress } } = useRuntimeConfig()
 
 const { pending, data } = useLazyAsyncData('entries', () => $fetch(`${backendAddress}/api/entries?tags=${selectedTags.value.join(',')}`, { credentials: 'include' }))
@@ -36,12 +37,6 @@ watch(data, (newData) => {
         }
     }
 })
-
-const nextCheckboxValue = (value) => ({
-    'true': 'strike',
-    'strike': 'false',
-    'false': 'true'
-}[value] || 'true')
 
 const update = async (key, value, tags) => {
     await $fetch(`${backendAddress}/api/entries`, {
@@ -97,7 +92,7 @@ const updateEntry = async (key, newValue) => {
     console.debug({ item, entry, tags, newValueCalc, exactEntry })
 
     console.debug('checkbox')
-    if(item.itype === 'checkbox' && newValueCalc === 'false' && exactEntry !== undefined){
+    if(checkboxTypes.includes(item.itype) && newValueCalc === 'false' && exactEntry !== undefined){
         console.debug('delete', { key, tags })
         return deleteEntry(key, tags)
     }
@@ -130,32 +125,6 @@ const captureTextInput = (key, newValue) => {
 <template>
     <el-space v-loading="pending || !data" direction="vertical" alignment="flex-start" style="width: 100%;" :fill="true">
         <el-space v-if="data" direction="vertical" alignment="flex-start" style="width: 100%;" :fill="true">
-            <!-- ungrouped
-            <el-space 
-                v-for="item in Object.values(mappings.items)" 
-                :key="item.key"
-                class="entry"
-                style="width: 100%; justify-content: space-between;"
-            >
-                <el-checkbox v-if="item.itype === 'checkbox'"
-                    plain 
-                    :label="item.key"
-                    v-model="mappings.entriesValues[item.key]"
-                    @change="update(item.key, (mappings.entriesValues[item.key]).toString())"
-                />
-                <p v-else>{{ entriesMap[item.key]?.value }}</p>
-
-                <div style="height: 1px; width: 50px; background: #ccc;"/>
-
-                <el-dropdown trigger="click">
-                    <el-button round text bg small class="el-dropdown-link">
-                        &middot;&middot;&middot;
-                    </el-button>
-                    <template #dropdown>
-                        <el-dropdown-item @click="deleteItem(item.key)">delete</el-dropdown-item>
-                    </template>
-                </el-dropdown>
-            </el-space> -->
             <el-space 
                 v-for="item in Object.entries(mappings.itemsGroups)" 
                 :key="item[0]"
@@ -171,17 +140,19 @@ const captureTextInput = (key, newValue) => {
                     :class="item.itype"
                 >
                     <el-checkbox
-                        v-if="item.itype === 'checkbox'"
+                        v-if="checkboxTypes.includes(item.itype)"
                         plain 
                         :class="(mappings.entriesValues[item.key] === undefined) ? 'strike' : ''"
                         :label="item.key"
                         :indeterminate="mappings.entriesValues[item.key] === undefined"
                         v-model="mappings.entriesValues[item.key]"
                         @change="updateEntry(item.key, (mappings.entriesValues[item.key].toString()))"
-                    />
-                    <div v-if="item.itype === 'checkbox'" style="position: relative; height: 1px; width: 50px; background: #ccc;">
+                    >
+                        <el-link :href="item.config.link" target="_blank" v-if="item.config.link">{{ item.key }}</el-link>
+                    </el-checkbox>
+                    <div v-if="checkboxTypes.includes(item.itype)" style="position: relative; height: 1px; width: 50px; background: #ccc;">
                         <p
-                            v-if="item.itype === 'checkbox' && mappings.entries[item.key] !== undefined"
+                            v-if="checkboxTypes.includes(item.itype) && mappings.entries[item.key] !== undefined"
                             style="position: absolute; top: -50px; right: 10px; font-size: 2rem; color: #aaa;"
                         >
                             &middot;
