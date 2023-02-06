@@ -38,23 +38,23 @@ watch(data, (newData) => {
     }
 })
 
-const update = async (key, value, tags) => {
+const update = async (key, group, value, tags) => {
     await $fetch(`${backendAddress}/api/entries`, {
         method: 'POST',
         credentials: 'include', 
         body: {
-            key, value, tags
+            key, group, value, tags
         }
     })
     refresh()
 }
 
-const deleteItem = async (key) => {
+const deleteItem = async (key, group) => {
     await $fetch(`${backendAddress}/api/items`, {
         method: 'DELETE',
         credentials: 'include',
         body: {
-            key
+            key, group
         }
     })
     refresh()
@@ -72,6 +72,8 @@ const updateEntry = async (key, newValue) => {
         ... item.tags,
         ... selectedTags.value.filter(tagIsMagic)
     ])]
+
+    const group = item.group
 
     const exactEntry = data.value.entries.find(
         (e) => {
@@ -93,24 +95,24 @@ const updateEntry = async (key, newValue) => {
         )
         : newValue
 
-    console.debug({ item, entry, tags, newValueCalc, exactEntry })
+    console.debug({ item, group, entry, tags, newValueCalc, exactEntry })
 
     if(checkboxTypes.includes(item.itype) && newValueCalc === 'false' && exactEntry !== undefined){
         console.debug('delete', { key, tags })
-        return deleteEntry(key, tags)
+        return deleteEntry(key, group, tags)
     }
 
     console.debug('update')
-    return update(key, newValueCalc, tags)
+    return update(key, group, newValueCalc, tags)
 }
 
-const deleteEntry = async (key, tags) => {
+const deleteEntry = async (key, group, tags) => {
     console.log(key, tags)
     await $fetch(`${backendAddress}/api/entries`, {
         method: 'DELETE',
         credentials: 'include',
         body: {
-            key, tags
+            key, group, tags
         }
     })
     refresh()
@@ -185,11 +187,11 @@ const captureTextInput = (key, newValue) => {
                             <template #dropdown>
                                 <el-dropdown-item 
                                     v-if="mappings.entries[item.key] !== undefined"
-                                    @click="deleteEntry(item.key, mappings.entries[item.key].tags)"
+                                    @click="deleteEntry(item.key, item.group, mappings.entries[item.key].tags)"
                                 >
                                     clear
                                 </el-dropdown-item>
-                                <el-dropdown-item @click="deleteItem(item.key)">delete</el-dropdown-item>
+                                <el-dropdown-item @click="deleteItem(item.key, item.group)">delete</el-dropdown-item>
                             </template>
                         </el-dropdown>
                 </el-space>

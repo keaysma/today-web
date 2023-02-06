@@ -3,9 +3,8 @@
 import { tagIsDate, getTagType, getTagColor, displayTag } from '@/utils/tags'
 
 const { public: { backendAddress } } = useRuntimeConfig()
-const data = ref()
+const data = useUser()
 
-const getData = () => data
 const getTagsFromLocalStorage = () => JSON.parse(localStorage.getItem('lastSelectedTags')) || []
 
 const calendar = ref()

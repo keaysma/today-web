@@ -2,6 +2,7 @@
 <script setup>
 import { getTagColor, getTagType, displayTag } from '@/utils/tags'
 const { public: { backendAddress } } = useRuntimeConfig()
+const user = useUser()
 const visible = useCreateItemFormIsOpen()
 const initialTags = useSelectedTags()
 
@@ -24,6 +25,12 @@ const availableTypes = ["checkbox", "checkbox-link", "markdown", "h1", "h2", "h3
 const typeModel = ref('checkbox')
 const selectType = (newValue) => typeModel.value = newValue
 
+const groupModel = ref({})
+const selectGroup = (newValue) => groupModel.value = newValue
+watch(user, (newValue) => {
+    groupModel.value = newValue.groups[0]
+})
+
 const submit = async () => {
     if(!typeModel.value || !tagsModel.value.length) return
 
@@ -43,6 +50,7 @@ const submit = async () => {
             key,
             itype,
             config,
+            group: groupModel.value.id,
             tags: tagsModel.value,
         }
     })
@@ -55,20 +63,36 @@ const submit = async () => {
 <template>
     <div v-if="visible">
         <el-space direction="vertical" alignment="flex-start">
-            <el-dropdown split-button type="plain" trigger="click" @command="selectType">
-                {{ typeModel }}
-                <template #dropdown>
-                    <el-dropdown-menu>
-                        <el-dropdown-item 
-                            v-for="itemType in availableTypes" 
-                            :key="itemType" 
-                            :command="itemType"
-                        >
-                            {{ itemType }}
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </template>
-            </el-dropdown>
+            <el-space direction="horizontal" alignment="flex-start">
+                <el-dropdown split-button type="plain" trigger="click" @command="selectType">
+                    {{ typeModel }}
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item 
+                                v-for="itemType in availableTypes" 
+                                :key="itemType" 
+                                :command="itemType"
+                            >
+                                {{ itemType }}
+                            </el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
+                <el-dropdown split-button type="plain" trigger="click" @command="selectGroup">
+                    {{ groupModel.name }}
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item 
+                                v-for="group in user.groups" 
+                                :key="group.id" 
+                                :command="group"
+                            >
+                                {{ group.name }}
+                            </el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
+            </el-space>
             <el-input v-if="typesWithCustomKeys.includes(typeModel)" v-model="inputModel" placeholder="key" />
             <el-input v-if="typesWithLinkConfig.includes(typeModel)" v-model="linkModel" placeholder="link" />
             <el-space wrap>
