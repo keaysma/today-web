@@ -35,8 +35,15 @@ const showInput = () => {
     nextTick(() => InputRef?.value?.focus())
 }
 const handleAddTag = () => {
-    if(inputValue.value)
-        selectedTags.value = [... selectedTags.value, inputValue.value].map(tag => tag.toLowerCase())
+    if(inputValue.value){
+        const group = data.value.tagSets.find(tagSet => tagSet.join(", ") === inputValue.value)
+        if(group){
+            selectedTags.value = [... group].map(tag => tag.toLowerCase())
+            addDateTags(new Date())
+        }else{
+            selectedTags.value = [... selectedTags.value, inputValue.value].map(tag => tag.toLowerCase())
+        }
+    }
     inputVisible.value = false
     inputValue.value = ''
     localStorage.setItem('lastSelectedTags', JSON.stringify(selectedTags.value))
@@ -66,14 +73,16 @@ const selectedTags = useSelectedTags()
 const additionalTagOptions = useState('additionalTags', () => [])
 
 const querySearch = (queryString, cb) => {
-    const { items, entries } = data.value || {
+    const { items, entries, tagSets } = data.value || {
         items: [],
-        entries: []
+        entries: [],
+        tagSets: [],
     }
 
     if(!queryString.length){
-        console.log({ items })
-        cb([... items].filter(value => !tagIsDate(value)).map(value => ({ value })))
+        console.log({ items, tagSets })
+        //cb([... items].filter(value => !tagIsDate(value)).map(value => ({ value })))
+        cb([... tagSets].map(tagSet => ({ value: tagSet.join(", ") })))
         return
     }
 
@@ -91,10 +100,12 @@ if(process.client){
             { credentials: 'include' }
         )
         data.value = res
-        selectedTags.value = getTagsFromLocalStorage()
     } catch {
         window.location.pathname = '/login'
     }
+    
+    selectedTags.value = getTagsFromLocalStorage()
+    addDateTags(new Date())
 }
 </script>
 

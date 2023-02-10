@@ -30,7 +30,7 @@ export default defineNuxtConfig({
     app: {
         head: {
             meta: [
-                { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+                { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0' },
             ],
             link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
         }
@@ -38,6 +38,10 @@ export default defineNuxtConfig({
 
     // https://github.com/kevinmarrec/nuxt-pwa-module/blob/main/src/module.ts
     pwa: {
+        manifest: {
+            name: 'Today.',
+            theme_color: "#FFF",
+        },
         meta: {
             name: 'Today.',
             author: 'Michael-Andrew Keays',
