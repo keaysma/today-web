@@ -35,15 +35,19 @@ const showInput = () => {
     nextTick(() => InputRef?.value?.focus())
 }
 const handleAddTag = () => {
+    console.log(`inputValue`, inputValue.value)
     if(inputValue.value){
         const group = data.value.tagSets.find(tagSet => tagSet.join(", ") === inputValue.value)
+        console.log({ group })
         if(group){
-            selectedTags.value = [... group].map(tag => tag.toLowerCase())
-            addDateTags(new Date())
+            selectedTags.value = [... group]
         }else{
-            selectedTags.value = [... selectedTags.value, inputValue.value].map(tag => tag.toLowerCase())
+            selectedTags.value = [... selectedTags.value, inputValue.value]
         }
     }
+
+    selectedTags.value = [ ... new Set([ ... selectedTags.value].map(tag => tag.toLowerCase()))]
+
     inputVisible.value = false
     inputValue.value = ''
     localStorage.setItem('lastSelectedTags', JSON.stringify(selectedTags.value))
@@ -79,18 +83,22 @@ const querySearch = (queryString, cb) => {
         tagSets: [],
     }
 
+    console.log(`queryString`, queryString)
+
     if(!queryString.length){
         console.log({ items, tagSets })
-        //cb([... items].filter(value => !tagIsDate(value)).map(value => ({ value })))
-        cb([... tagSets].map(tagSet => ({ value: tagSet.join(", ") })))
-        return
+        if(!selectedTags.value.length){
+            cb([... tagSets].map(tagSet => ({ value: tagSet.join(", ") })))
+        }else{
+            cb([... items].filter(value => !tagIsDate(value)).map(value => ({ value })))
+        }
+    }else{
+        console.log({ queryString })
+
+        const allTags = new Set([... items, ... entries, ... additionalTagOptions.value, queryString ])
+        const results = [... allTags].filter(tag => tag.indexOf(queryString) > -1)
+        cb(results.map(value => ({ value })))
     }
-
-    console.log({ queryString })
-
-    const allTags = new Set([... items, ... entries, ... additionalTagOptions.value, queryString ])
-    const results = [... allTags].filter(tag => tag.indexOf(queryString) > -1)
-    cb(results.map(value => ({ value })))
 }
 
 
@@ -105,7 +113,9 @@ if(process.client){
     }
     
     selectedTags.value = getTagsFromLocalStorage()
-    addDateTags(new Date())
+
+    if(selectedTags.value.some(tagIsDate))
+        addDateTags(new Date())
 }
 </script>
 
