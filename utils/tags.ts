@@ -1,3 +1,7 @@
+export const eqSet = (xs: any, ys: any) =>
+    xs.size === ys.size &&
+    [...xs].every((x) => ys.has(x));
+
 export const tagIsMagic = (tag: string) =>
     tag.split(':').length === 2
 
@@ -50,4 +54,18 @@ export const titleFromTags = (tagString: string) => {
         }
     }
     return [ ... normalTags, ... dateTags ]
+}
+
+export const getTagsFromLocalStorage = (): string[] => 
+    JSON.parse(
+        localStorage.getItem('lastSelectedTags') || '[]'
+    )
+
+export const getTagsFromSearch = (search: string): string[] => {
+    const url = new URL(location.href)
+    const tags = url.searchParams.get('tags')
+
+    if(!tags) return []
+
+    return tags.split(',')
 }

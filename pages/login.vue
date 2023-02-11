@@ -1,19 +1,21 @@
 <script setup>
-const { public: { backendAddress } } = useRuntimeConfig()
-
 useSeoMeta({
     head: 'Today. - login'
 })
+
+const router = useRouter()
+const { public: { backendAddress } } = useRuntimeConfig()
+const { data } = useFetch(`${backendAddress}/api/me`, { headers: useRequestHeaders(), credentials: 'include' })
+
+if(data?.value?.items?.length !== undefined){
+    router.replace({ path: '/' })
+}
 
 const username = ref('')
 const password = ref('')
 const displayError = ref('')
 
 const login = async () => {
-    console.log({
-        username: username.value,
-        password: password.value
-    })
     try{
         await $fetch(`${backendAddress}/api/auth`, {
             method: 'POST',
@@ -33,18 +35,6 @@ const login = async () => {
     }
 
 }
-
-if(process.client){
-    try{
-        const res = await $fetch(`${backendAddress}/api/me`, 
-            { credentials: 'include' }
-        )
-        if(res.items !== undefined){
-            window.location.pathname = '/'
-        }
-    } catch {
-    }
-}
 </script>
 
 <template>
@@ -54,7 +44,7 @@ if(process.client){
                 <el-space style="width: 100%; flex-direction: row-reverse;">
                     <el-button
                         color="#000"
-                        size="small"
+                        size="large"
                     >
                         Today.
                     </el-button>

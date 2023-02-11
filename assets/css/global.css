@@ -25,3 +25,13 @@ html, body, #__nuxt {
 .p>div:first-child {
     flex: 1;
 }
+
+@media screen and (max-width: 767px) {
+    * {
+        font-size: 0.9rem;
+    }
+
+    .el-autocomplete-suggestion [role=option] {
+        font-size: 1.5rem;
+    }
+}

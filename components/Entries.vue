@@ -2,15 +2,15 @@
 
 <script setup>
 import { titleFromTags } from '@/utils/tags'
+import { eqSet, getTagsFromLocalStorage, getTagsFromSearch } from '@/utils/tags';
 import { makeItemsMapping, makeItemsGroupsMapping, makeValuesMappingBase, makeEntriesMapping, makeValuesMapping, checkboxTypes } from '@/utils/mappings'
-import { ElDivider } from 'element-plus';
+
 const { public: { backendAddress } } = useRuntimeConfig()
+const { pending, data, refresh } = useAsyncData('entries', () => $fetch(`${backendAddress}/api/entries?tags=${selectedTags.value.join(',')}`, { credentials: 'include' }))
 
-const { pending, data } = useLazyAsyncData('entries', () => $fetch(`${backendAddress}/api/entries?tags=${selectedTags.value.join(',')}`, { credentials: 'include' }))
-const refresh = () => refreshNuxtData('entries')
-
+const user = useUser()
 const selectedTags = useSelectedTags()
-watch(selectedTags, () => refresh())
+watch(selectedTags, refresh)
 
 let mappings = ref({
     items: {},
@@ -22,9 +22,7 @@ watch(data, (newData) => {
     const itemsMapping = makeItemsMapping(newData.items)
     const itemsGroupsMapping = makeItemsGroupsMapping(newData.items)
     const valuesMappingBase = makeValuesMappingBase(itemsMapping)
-
     const entriesMapping = makeEntriesMapping(newData.entries)
-    
     const valuesMapping = makeValuesMapping(entriesMapping, itemsMapping)
     
     mappings.value = {
@@ -60,20 +58,16 @@ const deleteItem = async (key, group) => {
     refresh()
 }
 
-const eqSet = (xs, ys) =>
-    xs.size === ys.size &&
-    [...xs].every((x) => ys.has(x));
 const updateEntry = async (key, newValue) => {
     const item = mappings.value.items[key]
     const entry = mappings.value.entries[key]
-    //console.debug(data.value.entries)
 
+    const group = item.group
     const tags = [ ... new Set([
         ... item.tags,
         ... selectedTags.value.filter(tagIsMagic)
     ])]
 
-    const group = item.group
 
     const exactEntry = data.value.entries.find(
         (e) => {
@@ -125,6 +119,17 @@ const captureTextInput = (key, newValue) => {
         updateEntry(key, newValue)
     }, 500);
 }
+
+if(process.client){
+    const tagsFromSearch = getTagsFromSearch()
+    selectedTags.value = tagsFromSearch
+
+    if(selectedTags.value.length === 0){
+        selectedTags.value = getTagsFromLocalStorage()
+        if(selectedTags.value.some(tagIsDate))
+            addDateTags(new Date())
+    }
+}
 </script>
 
 <template>
@@ -158,7 +163,7 @@ const captureTextInput = (key, newValue) => {
                     <div v-if="checkboxTypes.includes(item.itype)" style="position: relative; height: 1px; width: 50px; background: #ccc;">
                         <p
                             v-if="checkboxTypes.includes(item.itype) && mappings.entries[item.key] !== undefined"
-                            style="position: absolute; top: -50px; right: 10px; font-size: 2rem; color: #aaa;"
+                            class="checkbox-middot"
                         >
                             &middot;
                         </p>
@@ -180,20 +185,21 @@ const captureTextInput = (key, newValue) => {
                     
                     <p v-else>???</p>
                     
-                    <el-dropdown trigger="click">
-                            <el-button round text bg small class="el-dropdown-link">
-                                &middot;&middot;&middot;
-                            </el-button>
-                            <template #dropdown>
-                                <el-dropdown-item 
-                                    v-if="mappings.entries[item.key] !== undefined"
-                                    @click="deleteEntry(item.key, item.group, mappings.entries[item.key].tags)"
-                                >
-                                    clear
-                                </el-dropdown-item>
-                                <el-dropdown-item @click="deleteItem(item.key, item.group)">delete</el-dropdown-item>
-                            </template>
-                        </el-dropdown>
+                    <el-dropdown trigger="click" size="large">
+                        <el-button round text bg small class="el-dropdown-link">
+                            &middot;&middot;&middot;
+                        </el-button>
+                        <template #dropdown>
+                            <el-dropdown-item 
+                                v-if="mappings.entries[item.key] !== undefined"
+                                @click="deleteEntry(item.key, item.group, mappings.entries[item.key].tags)"
+                            >
+                                clear
+                            </el-dropdown-item>
+                            <el-dropdown-item :disabled="true">group: {{ user.groups.find(group => group.id === item.group)?.name || "unknown" }}</el-dropdown-item>
+                            <el-dropdown-item :divided="true" @click="deleteItem(item.key, item.group)">delete</el-dropdown-item>
+                        </template>
+                    </el-dropdown>
                 </el-space>
             </el-space>
         </el-space>
@@ -212,6 +218,20 @@ const captureTextInput = (key, newValue) => {
 
 .strike>.el-checkbox__label {
     text-decoration: line-through;
+}
+
+.checkbox-middot{
+    position: absolute; 
+    top: -50px; 
+    right: 10px; 
+    font-size: 2rem; 
+    color: #aaa;
+}
+
+@media screen and (max-width: 767px) {
+    .checkbox-middot{
+        top: -45px;
+    }
 }
 
 </style>

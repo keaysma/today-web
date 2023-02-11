@@ -3,16 +3,21 @@
 import { getTagColor, getTagType, displayTag } from '@/utils/tags'
 const { public: { backendAddress } } = useRuntimeConfig()
 const user = useUser()
-const visible = useCreateItemFormIsOpen()
 const initialTags = useSelectedTags()
 
+const disableNewItemButton = ref(false)
+const visible = ref(false)
 const inputModel = ref('')
 const linkModel = ref('')
-const tagsModel = ref([])
+const tagsModel = ref(initialTags.value)
 watch(initialTags, (newTags) => {
     tagsModel.value = newTags
-    if(newTags.length < 1)
+    if(newTags.length < 1){
+        disableNewItemButton.value = true
         visible.value = false
+    }else{
+        disableNewItemButton.value = false
+    }
 })
 const resetTags = () => tagsModel.value = initialTags.value
 const handleRemoveTag = (removeTag) => {
@@ -20,16 +25,13 @@ const handleRemoveTag = (removeTag) => {
 }
 
 const typesWithCustomKeys = ["checkbox", "checkbox-link"]
-const typesWithLinkConfig = ["checkbox-link"]
-const availableTypes = ["checkbox", "checkbox-link", "markdown", "h1", "h2", "h3", "p", "image", "caption"]
+const typesWithLinkConfig = ["checkbox"] // ["checkbox-link"]
+const availableTypes = ["checkbox"] //["checkbox", "checkbox-link", "markdown", "h1", "h2", "h3", "p", "image", "caption"]
 const typeModel = ref('checkbox')
 const selectType = (newValue) => typeModel.value = newValue
 
-const groupModel = ref({})
+const groupModel = ref(user.value.groups[0])
 const selectGroup = (newValue) => groupModel.value = newValue
-watch(user, (newValue) => {
-    groupModel.value = newValue.groups[0]
-})
 
 const submit = async () => {
     if(!typeModel.value || !tagsModel.value.length) return
@@ -55,6 +57,7 @@ const submit = async () => {
         }
     })
     inputModel.value = ''
+    linkModel.value = ''
     refreshNuxtData('entries')
 }
 
@@ -64,66 +67,82 @@ const submit = async () => {
     <div v-if="visible">
         <el-space direction="vertical" alignment="flex-start">
             <el-space direction="horizontal" alignment="flex-start">
-                <el-dropdown split-button type="plain" trigger="click" @command="selectType">
-                    {{ typeModel }}
-                    <template #dropdown>
-                        <el-dropdown-menu>
-                            <el-dropdown-item 
-                                v-for="itemType in availableTypes" 
-                                :key="itemType" 
-                                :command="itemType"
-                            >
-                                {{ itemType }}
-                            </el-dropdown-item>
-                        </el-dropdown-menu>
-                    </template>
-                </el-dropdown>
-                <el-dropdown split-button type="plain" trigger="click" @command="selectGroup">
-                    {{ groupModel.name }}
-                    <template #dropdown>
-                        <el-dropdown-menu>
-                            <el-dropdown-item 
-                                v-for="group in user.groups" 
-                                :key="group.id" 
-                                :command="group"
-                            >
-                                {{ group.name }}
-                            </el-dropdown-item>
-                        </el-dropdown-menu>
-                    </template>
-                </el-dropdown>
+                <!-- <el-space direction="vertical" alignment="flex-start">
+                    <span>Type</span>
+                    <el-dropdown split-button type="plain" trigger="click" @command="selectType">
+                        {{ typeModel }}
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item 
+                                    v-for="itemType in availableTypes" 
+                                    :key="itemType" 
+                                    :command="itemType"
+                                >
+                                    {{ itemType }}
+                                </el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </el-space> -->
+                <el-space direction="vertical" alignment="flex-start">
+                    <span>Group</span>
+                    <el-dropdown split-button type="plain" trigger="click" @command="selectGroup">
+                        {{ groupModel.name }}
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item 
+                                    v-for="group in user.groups" 
+                                    :key="group.id" 
+                                    :command="group"
+                                >
+                                    {{ group.name }}
+                                </el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </el-space>
             </el-space>
-            <el-input v-if="typesWithCustomKeys.includes(typeModel)" v-model="inputModel" placeholder="key" />
-            <el-input v-if="typesWithLinkConfig.includes(typeModel)" v-model="linkModel" placeholder="link" />
-            <el-space wrap>
-                <el-button plain size="small" @click="resetTags">reset</el-button>
-                <el-tag
-                    v-for="tag in tagsModel"
-                    :key="tag"
-                    class="mx-1"
-                    closable
-                    :type="getTagType(tag)"
-                    :color="getTagColor(tag)"
-                    :disable-transitions="true"
-                    @close="handleRemoveTag(tag)"
-                >
-                    {{ displayTag(tag) }}
-                </el-tag>
+            <el-space direction="vertical" alignment="flex-start">
+                <span>Tags</span>
+                <el-space wrap>
+                    <el-button plain @click="resetTags">reset</el-button>
+                    <el-tag
+                        v-for="tag in tagsModel"
+                        :key="tag"
+                        class="mx-1"
+                        size="large"
+                        closable
+                        :type="getTagType(tag)"
+                        :color="getTagColor(tag)"
+                        :disable-transitions="true"
+                        @close="handleRemoveTag(tag)"
+                    >
+                        {{ displayTag(tag) }}
+                    </el-tag>
+                </el-space>
+            </el-space>
+            <el-space v-if="typesWithCustomKeys.includes(typeModel)" direction="vertical" alignment="flex-start">
+                <span>Name</span>
+                <el-input v-model="inputModel" placeholder="broccoli" />
+            </el-space>
+            <el-space v-if="typesWithLinkConfig.includes(typeModel)" direction="vertical" alignment="flex-start">
+                <span>Link</span>
+                <el-input v-model="linkModel" placeholder="https://..." />
             </el-space>
 
             <el-space direction="horizontal" alignment="flex-start">
                 <el-button type="danger" @click="visible = false" plain>Cancel</el-button>
-                <el-button type="success" @click="submit()" plain>Submit</el-button>
+                <el-button type="success" :disabled="tagsModel.length === 0" @click="submit()" plain>Submit</el-button>
             </el-space>
         </el-space>
     </div>
     <el-button 
         v-else
         plain
-        size="small"
+        size="large"
         type="primary" 
         style="width: 150px; margin-top: 20px;"
-        :disabled="initialTags.length === 0"
+        :disabled="disableNewItemButton"
         @click="visible = true" 
     >
         + New Item
