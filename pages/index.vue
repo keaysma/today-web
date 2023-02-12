@@ -7,9 +7,9 @@ useHead({
     ],
 })
 
-const { error } = await useFetch(`${backendAddress}/api/me`, { headers: useRequestHeaders(), credentials: 'include' })
 const { public: { backendAddress } } = useRuntimeConfig()
 const user = useUser()
+const { error } = await useFetch(`${backendAddress}/api/me`, { headers: useRequestHeaders(), credentials: 'include' })
 
 if(process.client){
     try{
