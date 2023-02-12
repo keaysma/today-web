@@ -12,7 +12,7 @@ const { public: { backendAddress } } = useRuntimeConfig()
 const { data, error } = useFetch(`${backendAddress}/api/me`, { headers: useRequestHeaders(), credentials: 'include' })
 
 if(error.value){
-    router.replace({ path: '/login' })
+    //router.push({ path: '/login' })
 }
 
 const user = useUser()
