@@ -191,12 +191,17 @@ if(process.client){
                         </el-button>
                         <template #dropdown>
                             <el-dropdown-item 
+                                v-if="user" 
+                                :disabled="true"
+                            >
+                                group: {{ user.groups.find(group => group.id === item.group)?.name || "unknown" }}
+                            </el-dropdown-item>
+                            <el-dropdown-item 
                                 v-if="mappings.entries[item.key] !== undefined"
                                 @click="deleteEntry(item.key, item.group, mappings.entries[item.key].tags)"
                             >
                                 clear
                             </el-dropdown-item>
-                            <el-dropdown-item v-if="user" :disabled="true">group: {{ user.groups.find(group => group.id === item.group)?.name || "unknown" }}</el-dropdown-item>
                             <el-dropdown-item :divided="true" @click="deleteItem(item.key, item.group)">delete</el-dropdown-item>
                         </template>
                     </el-dropdown>
