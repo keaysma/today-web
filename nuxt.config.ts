@@ -40,11 +40,15 @@ export default defineNuxtConfig({
     pwa: {
         manifest: {
             name: 'Today.',
+            description: 'The super-duper todo app for everyday, including today!',
+            background_color: "#FFF",
             theme_color: "#FFF",
         },
         meta: {
+            title: 'Today.',
             name: 'Today.',
             author: 'Michael-Andrew Keays',
+            description: 'The super-duper todo app for everyday, including today!',
             
             mobileApp: true,
             // Generate splash screens for iOS
