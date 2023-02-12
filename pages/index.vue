@@ -9,9 +9,9 @@ useHead({
 
 const router = useRouter()
 const { public: { backendAddress } } = useRuntimeConfig()
-const { data, error } = useFetch(`${backendAddress}/api/me`, { headers: useRequestHeaders(), credentials: 'include' })
+const { data, error } = await useFetch(`${backendAddress}/api/me`, { headers: useRequestHeaders(), credentials: 'include' })
 
-if(error.value){
+if(error?.value?.data){
     //router.push({ path: '/login' })
 }
 

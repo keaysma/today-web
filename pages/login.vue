@@ -5,7 +5,7 @@ useSeoMeta({
 
 const router = useRouter()
 const { public: { backendAddress } } = useRuntimeConfig()
-const { data } = useFetch(`${backendAddress}/api/me`, { headers: useRequestHeaders(), credentials: 'include' })
+const { data } = await useFetch(`${backendAddress}/api/me`, { headers: useRequestHeaders(), credentials: 'include' })
 
 if(data?.value?.items?.length !== undefined){
     router.push({ path: '/' })
