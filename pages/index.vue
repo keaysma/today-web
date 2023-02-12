@@ -7,16 +7,22 @@ useHead({
     ],
 })
 
-const router = useRouter()
 const { public: { backendAddress } } = useRuntimeConfig()
-const { data, error } = await useFetch(`${backendAddress}/api/me`, { headers: useRequestHeaders(), credentials: 'include' })
-
-if(error?.value?.data){
-    //router.push({ path: '/login' })
-}
-
 const user = useUser()
-user.value = data
+
+if(process.client){
+    try{
+        const res = await $fetch(`${backendAddress}/api/me`, 
+            { credentials: 'include' }
+        )
+        if(res.items === undefined){
+            window.location.pathname = '/login'
+        }
+        user.value = res
+    } catch {
+        window.location.pathname = '/login'
+    }
+}
 </script>
 
 <template>

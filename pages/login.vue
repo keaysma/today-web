@@ -3,13 +3,7 @@ useSeoMeta({
     head: 'Today. - login'
 })
 
-const router = useRouter()
 const { public: { backendAddress } } = useRuntimeConfig()
-const { data } = await useFetch(`${backendAddress}/api/me`, { headers: useRequestHeaders(), credentials: 'include' })
-
-if(data?.value?.items?.length !== undefined){
-    router.push({ path: '/' })
-}
 
 const username = ref('')
 const password = ref('')
@@ -34,6 +28,17 @@ const login = async () => {
         displayError.value = "failed to login"
     }
 
+}
+
+if(process.client){
+    try{
+        const res = await $fetch(`${backendAddress}/api/me`, 
+            { credentials: 'include' }
+        )
+        if(res.items !== undefined){
+            window.location.pathname = '/'
+        }
+    } catch { }
 }
 </script>
 
