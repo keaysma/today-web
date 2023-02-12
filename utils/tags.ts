@@ -56,6 +56,16 @@ export const titleFromTags = (tagString: string) => {
     return [ ... normalTags, ... dateTags ]
 }
 
+export const getTagsFromDate = (date: Date): string[] => {
+    const day = date.getDate().toString()
+    const year = date.getFullYear().toString()
+    const month = date.toLocaleString('default', { month: 'long' })
+
+    return [
+        `month:${month}`, `day:${day}`, `year:${year}`
+    ]
+}
+
 export const getTagsFromLocalStorage = (): string[] => 
     JSON.parse(
         localStorage.getItem('lastSelectedTags') || '[]'
@@ -63,9 +73,16 @@ export const getTagsFromLocalStorage = (): string[] =>
 
 export const getTagsFromSearch = (search: string): string[] => {
     const url = new URL(location.href)
-    const tags = url.searchParams.get('tags')
+    const tags = url.searchParams.get('tags')?.split?.(',') || []
+    const today = url.searchParams.get('today')
 
-    if(!tags) return []
+    return [ 
+        ... tags,
+        ... (
+            today !== null
+                ? getTagsFromDate(new Date())
+                : []
+        )
+    ]
 
-    return tags.split(',')
 }
