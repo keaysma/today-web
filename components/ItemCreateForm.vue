@@ -2,14 +2,15 @@
 <script setup>
 import { getTagColor, getTagType, displayTag } from '@/utils/tags'
 const { public: { backendAddress } } = useRuntimeConfig()
-const user = useUser()
-const initialTags = useSelectedTags()
 
-const disableNewItemButton = ref(false)
-const visible = ref(false)
-const inputModel = ref('')
-const linkModel = ref('')
-const tagsModel = ref(initialTags.value)
+const user = useUser()
+const groupModel = ref(user?.value?.groups?.[0] || {})
+const selectGroup = (newValue) => groupModel.value = newValue
+watch(user, (newUser) => {
+    groupModel.value = unewUserer.value.groups[9]
+})
+
+const initialTags = useSelectedTags()
 watch(initialTags, (newTags) => {
     tagsModel.value = newTags
     if(newTags.length < 1){
@@ -19,6 +20,13 @@ watch(initialTags, (newTags) => {
         disableNewItemButton.value = false
     }
 })
+
+const disableNewItemButton = ref(false)
+const visible = ref(false)
+const inputModel = ref('')
+const linkModel = ref('')
+const tagsModel = ref(initialTags.value)
+
 const resetTags = () => tagsModel.value = initialTags.value
 const handleRemoveTag = (removeTag) => {
     tagsModel.value = tagsModel.value.filter(tag => tag !== removeTag)
@@ -29,9 +37,6 @@ const typesWithLinkConfig = ["checkbox"] // ["checkbox-link"]
 const availableTypes = ["checkbox"] //["checkbox", "checkbox-link", "markdown", "h1", "h2", "h3", "p", "image", "caption"]
 const typeModel = ref('checkbox')
 const selectType = (newValue) => typeModel.value = newValue
-
-const groupModel = ref(user.value.groups[0])
-const selectGroup = (newValue) => groupModel.value = newValue
 
 const submit = async () => {
     if(!typeModel.value || !tagsModel.value.length) return
@@ -64,7 +69,7 @@ const submit = async () => {
 </script>
 
 <template>
-    <div v-if="visible">
+    <div v-if="visible && user">
         <el-space direction="vertical" alignment="flex-start">
             <el-space direction="horizontal" alignment="flex-start">
                 <!-- <el-space direction="vertical" alignment="flex-start">

@@ -8,7 +8,7 @@ const { public: { backendAddress } } = useRuntimeConfig()
 const { data } = useFetch(`${backendAddress}/api/me`, { headers: useRequestHeaders(), credentials: 'include' })
 
 if(data?.value?.items?.length !== undefined){
-    router.replace({ path: '/' })
+    router.push({ path: '/' })
 }
 
 const username = ref('')

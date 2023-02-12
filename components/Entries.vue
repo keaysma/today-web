@@ -196,7 +196,7 @@ if(process.client){
                             >
                                 clear
                             </el-dropdown-item>
-                            <el-dropdown-item :disabled="true">group: {{ user.groups.find(group => group.id === item.group)?.name || "unknown" }}</el-dropdown-item>
+                            <el-dropdown-item v-if="user" :disabled="true">group: {{ user.groups.find(group => group.id === item.group)?.name || "unknown" }}</el-dropdown-item>
                             <el-dropdown-item :divided="true" @click="deleteItem(item.key, item.group)">delete</el-dropdown-item>
                         </template>
                     </el-dropdown>
