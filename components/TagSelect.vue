@@ -38,7 +38,6 @@ const addTags = (tags) => {
 
     inputVisible.value = false
     inputValue.value = ''
-    localStorage.setItem('lastSelectedTags', JSON.stringify(selectedTags.value))
     nextTick(() =>  AddTagRef?.value?.ref?.focus())
 }
 const selectAutocompleteOption = () => {

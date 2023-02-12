@@ -12,6 +12,7 @@ export const addToSelectedTags = (tags: string[]) => {
             ... tags || []
         ].map(tag => tag.toLowerCase()))
     ]
+    localStorage.setItem('lastSelectedTags', JSON.stringify(selectedTags.value))
 }
 
 export const addDateTags = (date: Date) => {
