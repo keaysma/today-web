@@ -9,7 +9,6 @@ useHead({
 
 const { public: { backendAddress } } = useRuntimeConfig()
 const user = useUser()
-const { error } = await useFetch(`${backendAddress}/api/me`, { headers: useRequestHeaders(), credentials: 'include' })
 
 if(process.client){
     try{
@@ -28,7 +27,6 @@ if(process.client){
 
 <template>
     <div class="app-card">
-        {{ error }}
         <el-card class="box-card" style="margin-bottom: 10px;">
             <template #header>
                 <TagSelect />
