@@ -1,10 +1,9 @@
 <script setup>
-import { titleFromTags } from '@/utils/tags'
 import { makeItemsMapping, makeItemsGroupsMapping, makeValuesMappingBase, makeEntriesMapping, makeValuesMapping } from '@/utils/mappings'
 const { public: { backendAddress } } = useRuntimeConfig()
 const route = useRoute();
 //const { pending, data } = useFetch(`${backendAddress}/api/public/entries?tags=${selectedTags.value.join(',')}`)
-const { pending, data } = useLazyAsyncData('publication', () => $fetch(`${backendAddress}/api/publications?id=${route.params.publication}`, { credentials: 'include' }))
+const { data } = useLazyAsyncData('publication', () => $fetch(`${backendAddress}/api/publications?id=${route.params.publication}`, { credentials: 'include' }))
 refreshNuxtData('publication')
 
 let mappings = ref({

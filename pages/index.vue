@@ -1,4 +1,6 @@
-<script setup>
+<script setup lang="ts">
+import { User } from '~~/types'
+
 useHead({
     title: 'Today.',
     link: [{ rel: 'icon', type: 'image/png', href: '/favicon.ico' }],
@@ -10,15 +12,17 @@ useHead({
 const { public: { backendAddress } } = useRuntimeConfig()
 const user = useUser()
 
-if(process.client){
-    try{
-        const res = await $fetch(`${backendAddress}/api/me`, 
+if (process.client) {
+    try {
+        const res = await $fetch<User | { items: undefined }>(`${backendAddress}/api/me`,
             { credentials: 'include' }
         )
-        if(res.items === undefined){
+
+        if (res.items === undefined) {
             window.location.pathname = '/login'
+        } else {
+            user.value = res
         }
-        user.value = res
     } catch {
         window.location.pathname = '/login'
     }

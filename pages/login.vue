@@ -1,6 +1,6 @@
-<script setup>
-useSeoMeta({
-    head: 'Today. - login'
+<script setup lang="ts">
+useHead({
+    title: 'Today. - Login'
 })
 
 const { public: { backendAddress } } = useRuntimeConfig()
@@ -10,7 +10,7 @@ const password = ref('')
 const displayError = ref('')
 
 const login = async () => {
-    try{
+    try {
         await $fetch(`${backendAddress}/api/auth`, {
             method: 'POST',
             headers: {
@@ -30,12 +30,12 @@ const login = async () => {
 
 }
 
-if(process.client){
-    try{
-        const res = await $fetch(`${backendAddress}/api/me`, 
+if (process.client) {
+    try {
+        const res: { items?: unknown } = await $fetch(`${backendAddress}/api/me`,
             { credentials: 'include' }
         )
-        if(res.items !== undefined){
+        if (res.items !== undefined) {
             window.location.pathname = '/'
         }
     } catch { }
@@ -46,22 +46,14 @@ if(process.client){
     <div style="width: 500px; margin: 200px auto 0 auto;">
         <el-card class="box-card" style="margin-bottom: 10px;">
             <template #header>
-                <el-space style="width: 100%; flex-direction: row-reverse;">
-                    <el-button
-                        color="#000"
-                        size="large"
-                    >
-                        Today.
-                    </el-button>
-                </el-space>
+                <el-button color="#000" size="large">
+                    Today.
+                </el-button>
             </template>
             <el-space direction="vertical" alignment="start">
-                <el-input v-model="username" placeholder="username"/>
-                <el-input v-model="password" placeholder="password" type="password"/>
-                <el-button
-                    plain
-                    @click="login"
-                >
+                <el-input v-model="username" placeholder="username" />
+                <el-input v-model="password" placeholder="password" type="password" />
+                <el-button plain @click="login">
                     login.
                 </el-button>
                 <p style="color: red;">{{ displayError }}</p>
@@ -69,3 +61,15 @@ if(process.client){
         </el-card>
     </div>
 </template>
+
+<style>
+.el-input__wrapper {
+    padding: 0;
+}
+
+.el-input__wrapper > input {
+    padding: 1em;
+    border-radius: 4px;
+}
+
+</style>

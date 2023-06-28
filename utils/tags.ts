@@ -71,7 +71,7 @@ export const getTagsFromLocalStorage = (): string[] =>
         localStorage.getItem('lastSelectedTags') || '[]'
     )
 
-export const getTagsFromSearch = (search: string): string[] => {
+export const getTagsFromSearch = (): string[] => {
     const url = new URL(location.href)
     const tags = url.searchParams.get('tags')?.split?.(',') || []
     const today = url.searchParams.get('today')

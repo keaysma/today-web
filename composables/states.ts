@@ -1,6 +1,12 @@
+import { User } from "~~/types"
 import { getTagsFromDate } from "~~/utils/tags"
 
-export const useUser = () => useState('user', () => {})
+export const useUser = () => useState<User>('user', () => ({
+    tagSets: [],
+    items: [],
+    entries: [],
+    groups: []
+}))
 export const useSelectedTags = () => useState<string[]>('selectedTags', () => [])
 export const useCount = () => useState<number>('count', () => 0)
 
