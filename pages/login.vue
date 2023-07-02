@@ -46,7 +46,7 @@ if (process.client) {
     <div style="width: 500px; margin: 200px auto 0 auto;">
         <el-card class="box-card" style="margin-bottom: 10px;">
             <template #header>
-                <el-button color="#000" size="large">
+                <el-button class="logo" color="#000" size="large">
                     Today.
                 </el-button>
             </template>
@@ -70,6 +70,10 @@ if (process.client) {
 .el-input__wrapper > input {
     padding: 1em;
     border-radius: 4px;
+}
+
+.logo {
+    pointer-events: none;
 }
 
 </style>

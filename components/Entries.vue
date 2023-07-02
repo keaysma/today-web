@@ -3,7 +3,7 @@
 <script setup lang="ts">
 import { titleFromTags } from '@/utils/tags'
 import { eqSet, getTagsFromLocalStorage, getTagsFromSearch } from '@/utils/tags';
-import { makeItemsMapping, makeItemsGroupsMapping, makeValuesMappingBase, makeEntriesMapping, makeValuesMapping, checkboxTypes, iTypeToSize } from '@/utils/mappings'
+import { fromEntries, makeItemsGroupsMapping, makeValuesMappingBase, makeEntriesMapping, makeValuesMapping, checkboxTypes, headerTypes, textTypes, iTypeToSize } from '@/utils/mappings'
 import { EntriesResponse, Entry, Item, Tags } from '~~/types';
 
 const { public: { backendAddress } } = useRuntimeConfig()
@@ -27,12 +27,13 @@ let mappings = ref<{
 watch(data, (newData) => {
     if (!newData) return;
 
-    const itemsMapping = makeItemsMapping(newData.items)
+    const itemsMapping = fromEntries('key', newData.items)
     const itemsGroupsMapping = makeItemsGroupsMapping(newData.items)
     const entriesMapping = makeEntriesMapping(newData.entries, selectedTags.value)
 
     const valuesMappingBase = makeValuesMappingBase(itemsMapping)
     const valuesMapping = makeValuesMapping(entriesMapping, itemsMapping)
+    console.log({ valuesMappingBase, valuesMapping })
 
     mappings.value = {
         items: itemsMapping,
@@ -155,56 +156,53 @@ if (process.client) {
                         title.replaceAll('"', '').trim() }}</h3>
                 </el-space>
                 <el-space v-for="item in Object.values(ItemsByKey)" :key="item.key" :class="item.itype">
-                    <template v-if="mappings.entriesValues[item.key]">
-                        <el-checkbox v-if="checkboxTypes.includes(item.itype)" plain
-                            :class="(mappings.entriesValues[item.key] === undefined) ? 'strike' : ''"
-                            :indeterminate="mappings.entriesValues[item.key] === undefined"
-                            v-model="mappings.entriesValues[item.key]"
-                            @change="updateEntry(item.key, (mappings.entriesValues[item.key]?.toString()) ?? '')">
-                            <el-link :href="item.config.link" target="_blank" v-if="item.config.link" type="primary">{{
-                                item.key }}</el-link>
-                            <span v-else>{{ item.key }}</span>
-                        </el-checkbox>
-                        <div v-if="checkboxTypes.includes(item.itype)"
-                            style="position: relative; height: 1px; width: 50px; background: #ccc;">
-                            <p v-if="checkboxTypes.includes(item.itype) && mappings.entries[item.key] !== undefined"
-                                class="checkbox-middot">
-                                &middot;
-                            </p>
-                        </div>
+                    <el-checkbox v-if="checkboxTypes.includes(item.itype)" plain
+                        :class="(mappings.entriesValues[item.key] === undefined) ? 'strike' : ''"
+                        :indeterminate="mappings.entriesValues[item.key] === undefined"
+                        v-model="mappings.entriesValues[item.key]"
+                        @change="updateEntry(item.key, (mappings.entriesValues[item.key]?.toString()) ?? '')">
+                        <el-link :href="item.config.link" target="_blank" v-if="item.config.link" type="primary">{{
+                            item.key }}</el-link>
+                        <span v-else>{{ item.key }}</span>
+                    </el-checkbox>
+                    <div v-if="checkboxTypes.includes(item.itype)"
+                        style="position: relative; height: 1px; width: 50px; background: #ccc;">
+                        <p v-if="checkboxTypes.includes(item.itype) && mappings.entries[item.key] !== undefined"
+                            class="checkbox-middot">
+                            &middot;
+                        </p>
+                    </div>
 
-                        <el-input v-else-if="['h1', 'h2', 'h3'].includes(item.itype)" :size="iTypeToSize[item.itype]"
-                            :placeholder="item.itype" style="width: 100%;" v-model="mappings.entriesValues[item.key] as string"
-                            @input="captureTextInput(item.key, mappings.entriesValues[item.key])" />
+                    <el-input v-else-if="headerTypes.includes(item.itype)" :size="iTypeToSize[item.itype]"
+                        :placeholder="item.itype" style="width: 100%;" v-model="mappings.entriesValues[item.key] as string"
+                        @input="captureTextInput(item.key, mappings.entriesValues[item.key])" />
 
-                        <el-input v-else-if="['p', 'caption', 'markdown'].includes(item.itype)" type="textarea"
-                            placeholder="write" v-model="mappings.entriesValues[item.key] as string"
-                            @input="captureTextInput(item.key, mappings.entriesValues[item.key])" />
+                    <el-input v-else-if="textTypes.includes(item.itype)" type="textarea"
+                        placeholder="write" v-model="mappings.entriesValues[item.key] as string"
+                        @input="captureTextInput(item.key, mappings.entriesValues[item.key])" />
 
-                        <p v-else>???</p>
+                    <p v-else>???</p>
 
-                        <el-dropdown trigger="click" size="large">
-                            <el-button round text bg small class="el-dropdown-link">
-                                &middot;&middot;&middot;
-                            </el-button>
-                            <template #dropdown>
-                                <el-dropdown-item v-if="user" :disabled="true">
-                                    group: {{ user.groups.find(group => group.id === item.group)?.name || "unknown" }}
-                                </el-dropdown-item>
-                                <el-dropdown-item v-if="mappings.entries[item.key] !== undefined"
-                                    @click="deleteEntry(item.key, item.group, mappings.entries[item.key].tags)">
-                                    clear
-                                </el-dropdown-item>
-                                <el-dropdown-item :divided="true"
-                                    @click="deleteItem(item.key, item.group)">delete</el-dropdown-item>
-                            </template>
-                        </el-dropdown>
-                    </template>
+                    <el-dropdown trigger="click" size="large">
+                        <el-button round text bg small class="el-dropdown-link">
+                            &middot;&middot;&middot;
+                        </el-button>
+                        <template #dropdown>
+                            <el-dropdown-item v-if="user" :disabled="true">
+                                group: {{ user.groups.find(group => group.id === item.group)?.name || "unknown" }}
+                            </el-dropdown-item>
+                            <el-dropdown-item v-if="mappings.entries[item.key] !== undefined"
+                                @click="deleteEntry(item.key, item.group, mappings.entries[item.key].tags)">
+                                clear
+                            </el-dropdown-item>
+                            <el-dropdown-item :divided="true"
+                                @click="deleteItem(item.key, item.group)">delete</el-dropdown-item>
+                        </template>
+                    </el-dropdown>
                 </el-space>
             </el-space>
         </el-space>
     </el-space>
-    <!-- <button @click="refresh">get</button> -->
 </template>
 
 <style>
