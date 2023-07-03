@@ -27,10 +27,6 @@ const inputModel = ref('')
 const linkModel = ref('')
 const tagsModel = ref(initialTags.value)
 
-const resetTags = () => tagsModel.value = initialTags.value
-const handleRemoveTag = (removeTag) => {
-    tagsModel.value = tagsModel.value.filter(tag => tag !== removeTag)
-}
 const toggleTag = (tag) => {
     tagsModel.value.includes(tag)
         ? tagsModel.value = tagsModel.value.filter(t => t !== tag)
