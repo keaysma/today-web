@@ -140,6 +140,11 @@ label {
     color: gray;
 }
 
+/* Fixes a little bug in the el-divider component styling */
+.el-divider__text {
+    background-color: var(--el-bg-color-overlay);
+}
+
 .group-select>.el-input__wrapper {
     display: none;
 }
@@ -151,9 +156,6 @@ label {
 
 .group-select>.el-input-group__append>.el-dropdown>.el-button-group>.el-button:first-child {
     border-radius: 0;
-}
-.group-select>.el-input-group__append>.el-dropdown>.el-button-group>.el-button:last-child {
-    background-color: var(--el-fill-color-light);
 }
 
 .tag-select {

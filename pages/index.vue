@@ -51,7 +51,7 @@ if (process.client) {
     .app-card {
         width: 500px;
         height: unset;
-        margin: 200px auto 0 auto;
+        margin: 100px auto 0 auto;
     }
 }
 </style>

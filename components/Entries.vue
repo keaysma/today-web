@@ -184,9 +184,7 @@ if (process.client) {
                     <p v-else>???</p>
 
                     <el-dropdown trigger="click" size="large">
-                        <el-button round text bg small class="el-dropdown-link">
-                            &middot;&middot;&middot;
-                        </el-button>
+                        <el-button small plain circle type="info" :icon="ElIconMoreFilled"/>
                         <template #dropdown>
                             <el-dropdown-item v-if="user" :disabled="true">
                                 group: {{ user.groups.find(group => group.id === item.group)?.name || "unknown" }}

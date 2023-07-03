@@ -43,7 +43,7 @@ if (process.client) {
 </script>
 
 <template>
-    <div style="width: 500px; margin: 200px auto 0 auto;">
+    <div style="width: 500px; margin: 100px auto 0 auto;">
         <el-card class="box-card" style="margin-bottom: 10px;">
             <template #header>
                 <el-button class="logo" color="#000" size="large">
