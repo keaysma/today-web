@@ -1,5 +1,5 @@
 <script setup>
-import { makeItemsMapping, makeItemsGroupsMapping, makeValuesMappingBase, makeEntriesMapping, makeValuesMapping } from '@/utils/mappings'
+import { fromEntries, makeItemsGroupsMapping, makeValuesMappingBase, makeEntriesMapping, makeValuesMapping } from '@/utils/mappings'
 const { public: { backendAddress } } = useRuntimeConfig()
 const route = useRoute();
 //const { pending, data } = useFetch(`${backendAddress}/api/public/entries?tags=${selectedTags.value.join(',')}`)
@@ -17,7 +17,7 @@ let mappings = ref({
 }) 
 watch(data, (newData) => {
     console.log({ newData })
-    const itemsMapping = makeItemsMapping(newData.items)
+    const itemsMapping = fromEntries("key", newData.items)
     const itemsGroupsMapping = makeItemsGroupsMapping(newData.items)
     const valuesMappingBase = makeValuesMappingBase(itemsMapping)
 
