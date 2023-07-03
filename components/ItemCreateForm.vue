@@ -13,10 +13,10 @@ watch(user, (newUser) => {
 const initialTags = useSelectedTags()
 watch(initialTags, (newTags) => {
     tagsModel.value = newTags
-    if(newTags.length < 1){
+    if (newTags.length < 1) {
         disableNewItemButton.value = true
         visible.value = false
-    }else{
+    } else {
         disableNewItemButton.value = false
     }
 })
@@ -31,6 +31,11 @@ const resetTags = () => tagsModel.value = initialTags.value
 const handleRemoveTag = (removeTag) => {
     tagsModel.value = tagsModel.value.filter(tag => tag !== removeTag)
 }
+const toggleTag = (tag) => {
+    tagsModel.value.includes(tag)
+        ? tagsModel.value = tagsModel.value.filter(t => t !== tag)
+        : tagsModel.value = [...tagsModel.value, tag]
+}
 
 const typesWithCustomKeys = ["checkbox", "checkbox-link"]
 const typesWithLinkConfig = ["checkbox"] // ["checkbox-link"]
@@ -39,14 +44,14 @@ const typeModel = ref('checkbox')
 const selectType = (newValue) => typeModel.value = newValue
 
 const submit = async () => {
-    if(!typeModel.value || !tagsModel.value.length) return
+    if (!typeModel.value || !tagsModel.value.length) return
 
     const itype = typeModel.value
     const key = typesWithCustomKeys.includes(itype) ? inputModel.value : `${(new Date()).getTime()}`
-    if(!itype || !key) return
-    
+    if (!itype || !key) return
+
     const config = {}
-    if(typesWithLinkConfig.includes(itype)){
+    if (typesWithLinkConfig.includes(itype)) {
         config['link'] = linkModel.value
     }
 
@@ -70,86 +75,92 @@ const submit = async () => {
 
 <template>
     <div v-if="visible && user">
+        <el-divider>New Item</el-divider>
         <el-space direction="vertical" alignment="flex-start">
-            <el-space direction="horizontal" alignment="flex-start">
-                <!-- <el-space direction="vertical" alignment="flex-start">
-                    <span>Type</span>
-                    <el-dropdown split-button type="plain" trigger="click" @command="selectType">
-                        {{ typeModel }}
-                        <template #dropdown>
-                            <el-dropdown-menu>
-                                <el-dropdown-item 
-                                    v-for="itemType in availableTypes" 
-                                    :key="itemType" 
-                                    :command="itemType"
-                                >
-                                    {{ itemType }}
-                                </el-dropdown-item>
-                            </el-dropdown-menu>
-                        </template>
-                    </el-dropdown>
-                </el-space> -->
-                <el-space direction="vertical" alignment="flex-start">
-                    <span>Group</span>
-                    <el-dropdown split-button type="plain" trigger="click" @command="selectGroup">
+            <el-input class="group-select">
+                <template #prepend>
+                    <label>Group</label>
+                </template>
+                <template #append>
+                    <el-dropdown split-button trigger="click" @command="selectGroup">
                         {{ groupModel.name }}
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item 
-                                    v-for="group in user.groups" 
-                                    :key="group.id" 
-                                    :command="group"
-                                >
+                                <el-dropdown-item v-for="group in user.groups" :key="group.id" :command="group">
                                     {{ group.name }}
                                 </el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
-                </el-space>
-            </el-space>
-            <el-space direction="vertical" alignment="flex-start">
-                <span>Tags</span>
+                </template>
+            </el-input>
+            <el-input v-if="typesWithCustomKeys.includes(typeModel)" v-model="inputModel" placeholder="broccoli">
+                <template #prepend>
+                    <label>Name</label>
+                </template>
+            </el-input>
+            <el-input v-if="typesWithLinkConfig.includes(typeModel)" v-model="linkModel" placeholder="https://...">
+                <template #prepend>
+                    <label>Link</label>
+                </template>
+            </el-input>
+
+            <!-- <el-space direction="vertical" alignment="flex-start">
+                <label>Tags</label>
                 <el-space wrap>
                     <el-button plain @click="resetTags">reset</el-button>
-                    <el-tag
-                        v-for="tag in tagsModel"
-                        :key="tag"
-                        class="mx-1"
-                        size="large"
-                        closable
-                        :type="getTagType(tag)"
-                        :color="getTagColor(tag)"
-                        :disable-transitions="true"
-                        @close="handleRemoveTag(tag)"
-                    >
+                    <el-tag v-for="tag in tagsModel" :key="tag" class="mx-1" size="large" closable :type="getTagType(tag)"
+                        :color="getTagColor(tag)" :disable-transitions="true" @close="handleRemoveTag(tag)">
                         {{ displayTag(tag) }}
                     </el-tag>
                 </el-space>
-            </el-space>
-            <el-space v-if="typesWithCustomKeys.includes(typeModel)" direction="vertical" alignment="flex-start">
-                <span>Name</span>
-                <el-input v-model="inputModel" placeholder="broccoli" />
-            </el-space>
-            <el-space v-if="typesWithLinkConfig.includes(typeModel)" direction="vertical" alignment="flex-start">
-                <span>Link</span>
-                <el-input v-model="linkModel" placeholder="https://..." />
-            </el-space>
-
+            </el-space> -->
             <el-space direction="horizontal" alignment="flex-start">
+                <el-check-tag v-for="tag in initialTags" :key="tag" :type="getTagType(tag)" :color="getTagColor(tag)"
+                    :checked="tagsModel.includes(tag)" @update:checked="toggleTag(tag)">
+                    {{ displayTag(tag) }}
+                </el-check-tag>
+            </el-space>
+            <el-space direction="horizontal" alignment="flex-start" style="margin-top: 1em;">
                 <el-button type="danger" @click="visible = false" plain>Cancel</el-button>
                 <el-button type="success" :disabled="tagsModel.length === 0" @click="submit()" plain>Submit</el-button>
             </el-space>
         </el-space>
     </div>
-    <el-button 
-        v-else
-        plain
-        size="large"
-        type="primary" 
-        style="width: 150px; margin-top: 20px;"
-        :disabled="disableNewItemButton"
-        @click="visible = true" 
-    >
+    <el-button v-else plain size="large" type="primary" style="width: 150px; margin-top: 20px;"
+        :disabled="disableNewItemButton" @click="visible = true">
         + New Item
     </el-button>
 </template>
+
+<style>
+label {
+    font-size: .75em;
+    font-weight: 200;
+    color: gray;
+}
+
+.group-select>.el-input__wrapper {
+    display: none;
+}
+
+.group-select>.el-input-group__append {
+    box-shadow: 0 0 0 1px var(--el-input-border-color, var(--el-border-color)) inset;
+    background-color: transparent;
+}
+
+.group-select>.el-input-group__append>.el-dropdown>.el-button-group>.el-button:first-child {
+    border-radius: 0;
+}
+.group-select>.el-input-group__append>.el-dropdown>.el-button-group>.el-button:last-child {
+    background-color: var(--el-fill-color-light);
+}
+
+.tag-select {
+    min-width: 200px;
+}
+
+.el-select-v2__wrapper {
+    padding-bottom: 2px !important;
+}
+</style>

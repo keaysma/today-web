@@ -1,6 +1,6 @@
 <!-- A multi-select component for selecting tags. Auto-fetches suggestions when text is entered. -->
 <script setup>
-import { tagIsDate, getTagType, getTagColor, displayTag } from '@/utils/tags'
+import { tagIsDate, getTagType, getTagColor, displayTag, getTagIcon } from '@/utils/tags'
 
 const user = useUser()
 
@@ -17,7 +17,7 @@ const selectDate = (event) => {
     const skipSelect = event.target.classList.contains('no-select') || event.target.parentElement.classList.contains('no-select')
     //console.log(skipSelect)
 
-    if(!skipSelect){
+    if (!skipSelect) {
         addDateTags(selectedDate.value)
         dropdown.value.handleClose()
     }
@@ -38,17 +38,17 @@ const addTags = (tags) => {
 
     inputVisible.value = false
     inputValue.value = ''
-    nextTick(() =>  AddTagRef?.value?.ref?.focus())
+    nextTick(() => AddTagRef?.value?.ref?.focus())
 }
 const selectAutocompleteOption = () => {
     console.debug(`inputValue`, inputValue.value)
-    if(!inputValue.value) return
+    if (!inputValue.value) return
 
-    if(selectedTags.value.length === 0){
+    if (selectedTags.value.length === 0) {
         const group = user.value.tagSets.find(tagSet => tagSet.join(" | ") === inputValue.value)
         console.debug(`group`, group)
-        if(group){
-            addTags([ ... group ])
+        if (group) {
+            addTags([...group])
             return
         }
     }
@@ -73,89 +73,57 @@ const querySearch = (queryString, cb) => {
 
     console.debug(`queryString`, queryString)
 
-    if(!queryString.length){
-        if(!selectedTags.value.length){
+    if (!queryString.length) {
+        if (!selectedTags.value.length) {
             cb(
-                [... tagSets]
-                .map(tagSet => ({ value: tagSet.join(" | ") }))
+                [...tagSets]
+                    .map(tagSet => ({ value: tagSet.join(" | ") }))
             )
-        }else{
+        } else {
             cb(
-                [... items]
-                .filter(value => !tagIsDate(value))
-                .map(value => ({ value }))
+                [...items]
+                    .filter(value => !tagIsDate(value))
+                    .map(value => ({ value }))
             )
         }
-    }else{
-        const allTags = new Set([... items, ... entries, queryString ])
-        const results = [... allTags].filter(tag => tag.indexOf(queryString) > -1)
+    } else {
+        const allTags = new Set([...items, ...entries, queryString])
+        const results = [...allTags].filter(tag => tag.indexOf(queryString) > -1)
         cb(
             results
-            .map(value => ({ value }))
+                .map(value => ({ value }))
         )
     }
 }
 </script>
 
 <template>
-    <div
-        class="card-header" 
-        style="position: relative;"
-        v-loading="!user"
-    >
+    <div class="card-header" style="position: relative;" v-loading="!user">
         <el-space direction="vertical" alignment="start">
             <el-space wrap style="margin-right: 75px;">
-                <el-autocomplete
-                    v-if="inputVisible"
-                    clearable
-                    size="large"
-                    ref="InputRef"
-                    v-model="inputValue"
-                    :fetch-suggestions="querySearch"
-                    class="inline-input w-50"
-                    placeholder="Please Input"
-                    @select="selectAutocompleteOption"
-                />
-                <el-button v-else ref="AddTagRef" plain type="success" class="button-new-tag ml-1" size="large" @click="showInput">
+                <el-autocomplete v-if="inputVisible" clearable size="large" ref="InputRef" v-model="inputValue"
+                    :fetch-suggestions="querySearch" class="inline-input" placeholder="Please Input"
+                    @select="selectAutocompleteOption" />
+                <el-button v-else ref="AddTagRef" plain type="success" class="button-new-tag" @click="showInput">
                     + list
                 </el-button>
-                <el-button v-if="selectedTags.length" plain type="danger" class="button-new-tag ml-1" size="large" @click="clearAllTags">
+                <el-button v-if="selectedTags.length" plain type="danger" class="button-new-tag" @click="clearAllTags">
                     clear
                 </el-button>
             </el-space>
             <el-space wrap style="margin-right: 75px;">
-                <el-tag
-                    v-for="tag in selectedTags"
-                    :key="tag"
-                    class="mx-1"
-                    size="large"
-                    closable
-                    :type="getTagType(tag)"
-                    :color="getTagColor(tag)"
-                    :disable-transitions="true"
-                    @close="handleRemoveTag(tag)"
-                >
-                    {{ displayTag(tag) }}
+                <el-tag v-for="tag in selectedTags" :key="tag" size="large" closable :type="getTagType(tag)"
+                    :color="getTagColor(tag)" :disable-transitions="true" @close="handleRemoveTag(tag)">
+                    <component :is="getTagIcon(tag)" style="width: 1em; height: 1em; margin-right: 2px" />
+                    <span>{{ displayTag(tag) }}</span>
                 </el-tag>
             </el-space>
         </el-space>
-        <el-dropdown 
-            split-button 
-            type="primary" 
-            color="red"
-            size="large"
-            trigger="click" 
-            style="position: absolute; top: 0; right: 0;"
-            ref="dropdown"
-            @click="addDateTags(new Date())"
-        >
+        <el-dropdown split-button type="primary" color="red" size="large" trigger="click"
+            style="position: absolute; top: 0; right: 0;" ref="dropdown" @click="addDateTags(new Date())">
             Today.
             <template #dropdown>
-                <el-calendar
-                    ref="calendar"
-                    v-model="selectedDate"
-                    @click="selectDate"
-                >
+                <el-calendar ref="calendar" v-model="selectedDate" @click="selectDate">
                     <template #header="{ date }">
                         <span>{{ date }}</span>
                         <el-button-group>
