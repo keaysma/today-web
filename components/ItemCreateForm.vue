@@ -1,6 +1,7 @@
 <!-- A form for specifying settings for items. -->
 <script setup>
 import { getTagColor, getTagType, displayTag } from '@/utils/tags'
+import { TYPES_WITH_CUSTOM_KEYS, TYPES_WITH_LINK_CONFIG } from '@/constants/items'
 const { public: { backendAddress } } = useRuntimeConfig()
 
 const user = useUser()
@@ -33,9 +34,7 @@ const toggleTag = (tag) => {
         : tagsModel.value = [...tagsModel.value, tag]
 }
 
-const typesWithCustomKeys = ["checkbox", "checkbox-link"]
-const typesWithLinkConfig = ["checkbox"] // ["checkbox-link"]
-const availableTypes = ["checkbox"] //["checkbox", "checkbox-link", "markdown", "h1", "h2", "h3", "p", "image", "caption"]
+
 const typeModel = ref('checkbox')
 const selectType = (newValue) => typeModel.value = newValue
 
@@ -43,11 +42,11 @@ const submit = async () => {
     if (!typeModel.value || !tagsModel.value.length) return
 
     const itype = typeModel.value
-    const key = typesWithCustomKeys.includes(itype) ? inputModel.value : `${(new Date()).getTime()}`
+    const key = TYPES_WITH_CUSTOM_KEYS.includes(itype) ? inputModel.value : `${(new Date()).getTime()}`
     if (!itype || !key) return
 
     const config = {}
-    if (typesWithLinkConfig.includes(itype)) {
+    if (TYPES_WITH_LINK_CONFIG.includes(itype)) {
         config['link'] = linkModel.value
     }
 
@@ -90,12 +89,12 @@ const submit = async () => {
                     </el-dropdown>
                 </template>
             </el-input>
-            <el-input v-if="typesWithCustomKeys.includes(typeModel)" v-model="inputModel" placeholder="broccoli">
+            <el-input v-if="TYPES_WITH_CUSTOM_KEYS.includes(typeModel)" v-model="inputModel" placeholder="broccoli">
                 <template #prepend>
                     <label>Name</label>
                 </template>
             </el-input>
-            <el-input v-if="typesWithLinkConfig.includes(typeModel)" v-model="linkModel" placeholder="https://...">
+            <el-input v-if="TYPES_WITH_LINK_CONFIG.includes(typeModel)" v-model="linkModel" placeholder="https://...">
                 <template #prepend>
                     <label>Link</label>
                 </template>
