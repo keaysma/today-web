@@ -54,4 +54,13 @@ if (process.client) {
         margin: 100px auto 0 auto;
     }
 }
+
+@media screen and (max-width: 767px) {
+    .app-card {
+        .box-card {
+            border: none;
+            box-shadow: none;
+        }
+    }
+}
 </style>
