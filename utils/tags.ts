@@ -18,7 +18,7 @@ export const getTagType = (tag: string) => {
     if (tag === 'blog')
         return 'info'
 
-    return ''
+    return 'primary'
 }
 
 export const getTagColor = (tag: string) => {
