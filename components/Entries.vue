@@ -4,14 +4,17 @@
 import { titleFromTags } from '@/utils/tags'
 import { eqSet, getTagsFromLocalStorage, getTagsFromSearch } from '@/utils/tags';
 import { fromEntries, makeItemsGroupsMapping, makeValuesMappingBase, makeEntriesMapping, makeValuesMapping, checkboxTypes, headerTypes, textTypes, iTypeToSize } from '@/utils/mappings'
-import { EntriesResponse, Entry, Item, Tags } from '~~/types';
+import type { EntriesResponse, Entry, Group, Item, Tags } from '~~/types';
 
 const { public: { backendAddress } } = useRuntimeConfig()
 const { pending, data, refresh } = useAsyncData<EntriesResponse>('entries', () => $fetch(`${backendAddress}/api/entries?tags=${selectedTags.value.join(',')}`, { credentials: 'include' }))
 
 const user = useUser()
+const userGroups = computed(() => user.value?.groups.reduce<Record<number, Group>>((acc, group) => ({ ...acc, [group.id]: group }), {}) ?? {})
 const selectedTags = useSelectedTags()
-watch(selectedTags, refresh)
+watch(selectedTags, () => refresh())
+
+const editingItem = ref<Item | null>(null)
 
 let mappings = ref<{
     items: Record<string, Item>,
@@ -45,17 +48,6 @@ watch(data, (newData) => {
         }
     }
 })
-
-const update = async (key: string, group: number, value: string, tags: Tags) => {
-    await $fetch(`${backendAddress}/api/entries`, {
-        method: 'POST',
-        credentials: 'include',
-        body: {
-            key, group, value, tags
-        }
-    })
-    refresh()
-}
 
 const deleteItem = async (key: string, group: number) => {
     await $fetch(`${backendAddress}/api/items`, {
@@ -93,7 +85,7 @@ const updateEntry = async (key: string, newValue: string) => {
         }
     )
 
-    const newValueCalc = checkboxTypes.includes(item.itype)
+    const value = checkboxTypes.includes(item.itype)
         ? (
             newValue === 'false' && exactEntry
                 ? 'strike'
@@ -103,15 +95,22 @@ const updateEntry = async (key: string, newValue: string) => {
         )
         : newValue
 
-    console.debug({ item, group, entry, tags, newValueCalc, exactEntry })
+    console.debug({ item, group, entry, tags, value, exactEntry })
 
-    if (checkboxTypes.includes(item.itype) && newValueCalc === 'false' && exactEntry !== undefined) {
+    if (checkboxTypes.includes(item.itype) && value === 'false' && exactEntry !== undefined) {
         console.debug('delete', { key, tags })
         return deleteEntry(key, group, tags)
     }
 
     console.debug('update')
-    return update(key, group, newValueCalc, tags)
+    await $fetch(`${backendAddress}/api/entries`, {
+        method: 'POST',
+        credentials: 'include',
+        body: {
+            key, group, value, tags
+        }
+    })
+    refresh()
 }
 
 const deleteEntry = async (key: string, group: number, tags: Tags) => {
@@ -177,17 +176,22 @@ if (process.client) {
                         :placeholder="item.itype" style="width: 100%;" v-model="mappings.entriesValues[item.key] as string"
                         @input="captureTextInput(item.key, mappings.entriesValues[item.key])" />
 
-                    <el-input v-else-if="textTypes.includes(item.itype)" type="textarea"
-                        placeholder="write" v-model="mappings.entriesValues[item.key] as string"
+                    <el-input v-else-if="textTypes.includes(item.itype)" type="textarea" placeholder="write"
+                        v-model="mappings.entriesValues[item.key] as string"
                         @input="captureTextInput(item.key, mappings.entriesValues[item.key])" />
 
                     <p v-else>???</p>
 
+                    <!--<el-text type="info" class="group-name">{{ userGroups?.[item.group].name ?? "unknwon" }}</el-text>-->
+
                     <el-dropdown trigger="click" size="large">
-                        <el-button small plain circle type="info" :icon="ElIconMoreFilled"/>
+                        <el-button small plain circle :icon="ElIconMoreFilled" />
                         <template #dropdown>
                             <el-dropdown-item v-if="user" :disabled="true">
                                 group: {{ user.groups.find(group => group.id === item.group)?.name || "unknown" }}
+                            </el-dropdown-item>
+                            <el-dropdown-item @click="editingItem = item">
+                                edit
                             </el-dropdown-item>
                             <el-dropdown-item v-if="mappings.entries[item.key] !== undefined"
                                 @click="deleteEntry(item.key, item.group, mappings.entries[item.key].tags)">
@@ -201,6 +205,12 @@ if (process.client) {
             </el-space>
         </el-space>
     </el-space>
+
+    <client-only>
+        <el-dialog :model-value="editingItem !== null" @update:model-value="editingItem = null" title="Edit Item">
+            <item-edit-form v-if="editingItem" :item="editingItem" :user-groups="userGroups" @submitted="refresh" @close="editingItem = null" />
+        </el-dialog>
+    </client-only>
 </template>
 
 <style>
@@ -210,6 +220,10 @@ if (process.client) {
 
     margin: 0;
     padding: 0;
+}
+
+.group-name {
+    margin-top: -3px;
 }
 
 .strike>.el-checkbox__label {
