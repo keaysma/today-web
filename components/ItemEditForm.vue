@@ -72,7 +72,7 @@ const selectGroup = (group: Group) => editModel.value.group = group.id;
             <el-input v-if="TYPES_WITH_LINK_CONFIG.includes(item.itype)" v-model="editModel.config.link" placeholder="https://..."/>
         </el-form-item>
         <el-form-item label="Tags">
-            <el-space direction="horizontal" alignment="flex-start">
+            <el-space direction="horizontal" alignment="flex-start" wrap>
                 <el-check-tag v-for="tag in selectedTags" :key="tag" :type="getTagType(tag)" :color="getTagColor(tag)"
                     :checked="editModel.tags.includes(tag)" @update:checked="toggleTag(tag)">
                     {{ displayTag(tag) }}
