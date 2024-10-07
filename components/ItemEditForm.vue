@@ -68,11 +68,9 @@ const selectGroup = (group: Group) => editModel.value.group = group.id;
         <el-form-item label="Name">
             <el-input v-model="editModel.key" />
         </el-form-item>
-        <el-input v-if="TYPES_WITH_LINK_CONFIG.includes(typeModel)" v-model="item.config.link" placeholder="https://...">
-            <template #prepend>
-                <label>Link</label>
-            </template>
-        </el-input>
+        <el-form-item label="Link">
+            <el-input v-if="TYPES_WITH_LINK_CONFIG.includes(item.itype)" v-model="editModel.config.link" placeholder="https://..."/>
+        </el-form-item>
         <el-form-item label="Tags">
             <el-space direction="horizontal" alignment="flex-start">
                 <el-check-tag v-for="tag in selectedTags" :key="tag" :type="getTagType(tag)" :color="getTagColor(tag)"
